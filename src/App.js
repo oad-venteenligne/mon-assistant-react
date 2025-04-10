@@ -470,7 +470,7 @@ const Assistant = () => {
                 <h2 className="text-3xl font-bold mb-6 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
                 <p className="text-lg mb-8">{currentQuestion.description}</p>
                 <img 
-                  src="https://source.unsplash.com/400x300/?agriculture,farm"
+                  src="/images/accueil.jpg"
                   alt="Agriculture durable" 
                   className="mx-auto rounded-lg shadow-md mb-8"
                 />
