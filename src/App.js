@@ -233,7 +233,7 @@ const Assistant = () => {
     // Simulation de chargement pour la démo
     // En production, utilisez votre API réelle
     setTimeout(() => {
-      fetch("https://www.oad-venteenligne.org/?api/forms/7/entries")
+      fetch("/api/data")
         .then(response => {
           if (!response.ok) {
             throw new Error(`Erreur réseau: ${response.status}`);
@@ -425,7 +425,7 @@ const Assistant = () => {
       <header className="p-4 bg-white dark:bg-gray-800 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold text-green-600 dark:text-green-400">
-            Assistant de sélection de plateformes agricoles
+            Assistant de sélection d'outils de vente en ligne
           </h1>
           
           {/* Barre de progression */}
@@ -764,7 +764,7 @@ const Assistant = () => {
       {/* Pied de page */}
       <footer className="bg-white dark:bg-gray-800 shadow-md mt-8 py-4">
         <div className="container mx-auto text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>Assistant de sélection pour les plateformes de vente en ligne pour produits agricoles</p>
+          <p>Assistant de sélection de plateformes de vente directe en ligne de produits alimentaires</p>
           <p className="mt-2">
             <a href="/" className="text-green-600 dark:text-green-400 hover:underline">
               Retour au site principal
