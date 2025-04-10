@@ -470,7 +470,7 @@ const Assistant = () => {
                 <h2 className="text-3xl font-bold mb-6 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
                 <p className="text-lg mb-8">{currentQuestion.description}</p>
                 <img 
-                  src="/api/placeholder/400/300"
+                  src="https://source.unsplash.com/400x300/?agriculture,farm"
                   alt="Agriculture durable" 
                   className="mx-auto rounded-lg shadow-md mb-8"
                 />
@@ -766,7 +766,7 @@ const Assistant = () => {
         <div className="container mx-auto text-center text-sm text-gray-600 dark:text-gray-400">
           <p>Assistant de sélection de plateformes de vente directe en ligne de produits alimentaires</p>
           <p className="mt-2">
-            <a href="/" className="text-green-600 dark:text-green-400 hover:underline">
+          <a href="https://www.oad-venteenligne.org/" className="text-green-600 dark:text-green-400 hover:underline" target="_blank" rel="noopener noreferrer">
               Retour au site principal
             </a>
           </p>
