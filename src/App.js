@@ -201,6 +201,7 @@ const Assistant = () => {
   const [results, setResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAllResults, setShowAllResults] = useState(false);
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
 
   // Index des questions pour la navigation
   const questionIndex = questions.reduce((acc, q, idx) => {
@@ -418,6 +419,19 @@ const Assistant = () => {
   // Récupérer la question actuelle
   const currentQuestion = questions.find(q => q.id === currentQuestionId);
 
+  // Fonction pour basculer l'affichage d'une description
+  const toggleDescription = (index, event) => {
+    // Empêcher la propagation de l'événement pour éviter d'ouvrir la carte complète
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
   // Rendu du composant
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100">
@@ -487,7 +501,7 @@ const Assistant = () => {
             {currentQuestion.type === 'choice' && (
               <div>
                 <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
-                <p className="mb-6 text-gray-600 dark:text-gray-300">{currentQuestion.description}</p>
+                <p className="mb-6 text-gray-600 dark:text-gray-300 italic">{currentQuestion.description}</p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                   {currentQuestion.choices.map(choice => {
@@ -621,9 +635,18 @@ const Assistant = () => {
                               <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-2">
                                 {result.item.bf_titre || 'Sans titre'}
                               </h3>
-                              <p className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-                                {result.item.bf_descriptiongenerale || 'Aucune description disponible'}
-                              </p>
+                              <div className="mb-3">
+                                <p className={`text-gray-600 dark:text-gray-300 ${!expandedDescriptions[index] ? 'line-clamp-2' : ''}`}>
+                                  {result.item.bf_descriptiongenerale || 'Aucune description disponible'}
+                                </p>
+                                <button 
+                                  onClick={(e) => toggleDescription(index, e)}
+                                  className="text-green-600 dark:text-green-400 mt-1 flex items-center text-sm font-medium hover:underline"
+                                >
+                                  {expandedDescriptions[index] ? 'Voir moins' : 'Voir plus'} 
+                                  <span className="ml-1 text-lg font-bold">{expandedDescriptions[index] ? '−' : '+'}</span>
+                                </button>
+                              </div>
                               
                               <div className="flex flex-wrap gap-2 mb-3">
                                 {/* Affichage des tags indiquant pourquoi cet outil correspond */}
@@ -669,65 +692,95 @@ const Assistant = () => {
                           {/* Pourquoi cet outil ? Section pliable/dépliable */}
                           <details className="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
                             <summary className="py-2 px-4 cursor-pointer font-semibold">
-                              Pourquoi cet outil correspond à vos critères ?
+                              Correspondance avec vos critères
                             </summary>
                             <div className="p-4 text-sm">
-                              <ul className="space-y-2">
-                                {Object.entries(answers).map(([questionId, answer]) => {
-                                  const question = questions.find(q => q.id === questionId);
-                                  if (!question || !question.filter) return null;
-                                  
-                                  let isMatch = false;
-                                  let matchText = '';
-                                  
-                                  if (question.filter === 'listeListeTypeplateforme') {
-                                    if (answer && result.item[question.filter] === answer) {
-                                      const choiceLabel = question.choices.find(c => c.id === answer)?.label;
-                                      matchText = `Type d'outil: ${choiceLabel}`;
-                                      isMatch = true;
-                                    }
-                                  } 
-                                  else if (question.filter === 'ouinonFields') {
-                                    if (Array.isArray(answer) && answer.length > 0) {
-                                      const matchedFeatures = answer.filter(ans => {
-                                        const fieldName = question.filterMapping[ans];
-                                        return fieldName && result.item[fieldName] === "2"; // "2" = Oui
-                                      });
-                                      
-                                      if (matchedFeatures.length > 0) {
-                                        const featureLabels = matchedFeatures.map(feat => 
-                                          question.choices.find(c => c.id === feat)?.label
-                                        ).filter(Boolean);
-                                        
-                                        matchText = `Fonctionnalités présentes: ${featureLabels.join(', ')}`;
-                                        isMatch = true;
-                                      }
-                                    }
+                              {Object.entries(answers).map(([questionId, answer]) => {
+                                const question = questions.find(q => q.id === questionId);
+                                if (!question || !question.filter) return null;
+                                
+                                // Pour chaque question, nous allons collecter les critères qui correspondent et ceux qui ne correspondent pas
+                                const matchingCriteria = [];
+                                const nonMatchingCriteria = [];
+                                
+                                if (question.filter === 'listeListeTypeplateforme') {
+                                  if (answer && result.item[question.filter] === answer) {
+                                    const choiceLabel = question.choices.find(c => c.id === answer)?.label;
+                                    matchingCriteria.push(`Type d'outil: ${choiceLabel}`);
+                                  } else if (answer) {
+                                    const choiceLabel = question.choices.find(c => c.id === answer)?.label;
+                                    nonMatchingCriteria.push(`Type d'outil: ${choiceLabel}`);
                                   }
-                                  else {
-                                    if (Array.isArray(answer) && answer.length > 0) {
-                                      const itemValues = (result.item[question.filter] || '').split(',').map(s => s.trim());
-                                      const matchedChoices = answer.filter(ans => itemValues.includes(ans));
+                                } 
+                                else if (question.filter === 'ouinonFields') {
+                                  if (Array.isArray(answer) && answer.length > 0) {
+                                    answer.forEach(ans => {
+                                      const fieldName = question.filterMapping[ans];
+                                      const featureLabel = question.choices.find(c => c.id === ans)?.label;
                                       
-                                      if (matchedChoices.length > 0) {
-                                        const choiceLabels = matchedChoices.map(choice => 
-                                          question.choices.find(c => c.id === choice)?.label
-                                        ).filter(Boolean);
-                                        
-                                        matchText = `${question.title.replace('?', '')}: ${choiceLabels.join(', ')}`;
-                                        isMatch = true;
+                                      if (fieldName && result.item[fieldName] === "2") { // "2" = Oui
+                                        matchingCriteria.push(featureLabel);
+                                      } else if (fieldName) {
+                                        nonMatchingCriteria.push(featureLabel);
                                       }
-                                    }
+                                    });
                                   }
-                                  
-                                  return isMatch ? (
-                                    <li key={questionId} className="flex items-start">
-                                      <CheckCircle size={16} className="text-green-500 mr-2 mt-0.5 shrink-0" />
-                                      <span>{matchText}</span>
-                                    </li>
-                                  ) : null;
-                                })}
-                              </ul>
+                                }
+                                else {
+                                  if (Array.isArray(answer) && answer.length > 0) {
+                                    const itemValues = (result.item[question.filter] || '').split(',').map(s => s.trim());
+                                    
+                                    answer.forEach(ans => {
+                                      const choiceLabel = question.choices.find(c => c.id === ans)?.label;
+                                      
+                                      if (itemValues.includes(ans)) {
+                                        matchingCriteria.push(choiceLabel);
+                                      } else {
+                                        nonMatchingCriteria.push(choiceLabel);
+                                      }
+                                    });
+                                  }
+                                }
+                                
+                                // N'afficher la section que si nous avons des critères à montrer
+                                if (matchingCriteria.length === 0 && nonMatchingCriteria.length === 0) {
+                                  return null;
+                                }
+                                
+                                return (
+                                  <div key={questionId} className="mb-4">
+                                    <h4 className="font-medium mb-2">{question.title.replace('?', '')}</h4>
+                                    
+                                    {matchingCriteria.length > 0 && (
+                                      <div className="mb-2">
+                                        <h5 className="text-xs uppercase text-green-600 dark:text-green-400 mb-1">Critères correspondants</h5>
+                                        <ul className="space-y-1">
+                                          {matchingCriteria.map((text, idx) => (
+                                            <li key={idx} className="flex items-start">
+                                              <CheckCircle size={14} className="text-green-500 mr-2 mt-0.5 shrink-0" />
+                                              <span>{text}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    
+                                    {nonMatchingCriteria.length > 0 && (
+                                      <div>
+                                        <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">Critères non correspondants</h5>
+                                        <ul className="space-y-1">
+                                          {nonMatchingCriteria.map((text, idx) => (
+                                            <li key={idx} className="flex items-start text-gray-500 dark:text-gray-400">
+                                              <span className="mr-2 mt-0.5 shrink-0">✕</span>
+                                              <span className="line-through">{text}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </details>
                         </div>
