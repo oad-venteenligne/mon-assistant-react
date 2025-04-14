@@ -683,7 +683,7 @@ const Assistant = () => {
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center text-green-600 dark:text-green-400 hover:underline mt-2"
                                 >
-                                  Voir les détails <ExternalLink size={14} className="ml-1" />
+                                  Site Web de l'outil <ExternalLink size={14} className="ml-1" />
                                 </a>
                               </div>
                             </div>
