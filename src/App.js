@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, HelpCircle } from "lucide-react
+import { CheckCircle, HelpCircle } from "lucide-react";
 import { ArrowRight, ArrowLeft, RefreshCw, CheckCircle, ExternalLink, Search } from 'lucide-react';
 
 // Configuration des questions
