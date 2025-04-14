@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, ArrowLeft, RefreshCw, CheckCircle, ExternalLink, Search } from 'lucide-react';
+import { ArrowRight, ArrowLeft, RefreshCw, CheckCircle, ExternalLink, Search, HelpCircle } from 'lucide-react';
 
 // Configuration des questions
 const questions = [
@@ -202,8 +202,6 @@ const Assistant = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAllResults, setShowAllResults] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
-  const [compareList, setCompareList] = useState([]);
-  const [showComparison, setShowComparison] = useState(false);
 
   // Index des questions pour la navigation
   const questionIndex = questions.reduce((acc, q, idx) => {
@@ -499,98 +497,135 @@ const Assistant = () => {
               </div>
             )}
             
-              {/* Questions à choix */}
-              {currentQuestion.type === 'choice' && (
-                <div>
-                  <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">
-                    {currentQuestion.title}
-                  </h2>
-                  <p className="mb-6 text-gray-600 dark:text-gray-300 italic">
-                    {currentQuestion.description}
-                  </p>
+            {/* Questions à choix */}
+            {currentQuestion.type === 'choice' && (
+              <div>
+                <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">
+                  {currentQuestion.title}
+                </h2>
+                <p className="mb-6 text-gray-600 dark:text-gray-300 italic">
+                  {currentQuestion.description}
+                </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    {currentQuestion.choices.map(choice => {
-                      const isSelected = currentQuestion.multiple 
-                        ? answers[currentQuestionId]?.includes(choice.id)
-                        : answers[currentQuestionId] === choice.id;
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {currentQuestion.choices.map(choice => {
+                    const isSelected = currentQuestion.multiple 
+                      ? answers[currentQuestionId]?.includes(choice.id)
+                      : answers[currentQuestionId] === choice.id;
 
-                      return (
-                        <div 
-                          key={choice.id}
-                          onClick={() => handleAnswer(currentQuestionId, choice.id)}
-                          className={`border p-4 rounded-lg cursor-pointer transition-all ${
-                            isSelected 
-                              ? 'border-green-500 bg-green-50 dark:bg-green-900 dark:border-green-600 shadow-md' 
-                              : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          <div className="flex items-start">
-                            {/* Icône du choix si disponible */}
-                            {choice.icon && (
-                              <span className="text-2xl mr-3">{choice.icon}</span>
-                            )}
-                            <div className="flex-grow">
-                              <h3 className="font-semibold text-lg flex items-center">
-                                {choice.label}
-                                {isSelected && (
-                                  <CheckCircle size={18} className="ml-2 text-green-500" />
-                                )}
-                              </h3>
-                              {choice.description && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                  {choice.description}
-                                </p>
+                    return (
+                      <div 
+                        key={choice.id}
+                        onClick={() => handleAnswer(currentQuestionId, choice.id)}
+                        className={`border p-4 rounded-lg cursor-pointer transition-all ${
+                          isSelected 
+                            ? 'border-green-500 bg-green-50 dark:bg-green-900 dark:border-green-600 shadow-md' 
+                            : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        <div className="flex items-start">
+                          {/* Icône du choix si disponible */}
+                          {choice.icon && (
+                            <span className="text-2xl mr-3">{choice.icon}</span>
+                          )}
+                          <div className="flex-grow">
+                            <h3 className="font-semibold text-lg flex items-center">
+                              {choice.label}
+                              {isSelected && (
+                                <CheckCircle size={18} className="ml-2 text-green-500" />
                               )}
-                            </div>
-                          </div>
+                            </h3>
+                            {choice.description && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                {choice.description}
+                              </p>
+                            )}
                         </div>
-                      );
-                    })}
+            )}
+          </div>
+        )}
+      </main>
+      
+      {/* Pied de page */}
+      <footer className="bg-white dark:bg-gray-800 shadow-md mt-8 py-4">
+        <div className="container mx-auto">
+          {/* Texte existant */}
+          <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p>Assistant de sélection pour les plateformes de vente en ligne pour produits agricoles</p>
+            <p className="mt-2">
+              <a href="/" className="text-green-600 dark:text-green-400 hover:underline">
+                Retour au site principal
+              </a>
+            </p>
+          </div>
+          
+          {/* Nouvelle section pour les logos */}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs text-center text-gray-500 dark:text-gray-500 mb-3">
+              Un projet porté par
+            </p>
+            <div className="flex justify-center items-center flex-wrap gap-6 sm:gap-10 px-4">
+              {/* Logo container avec dimensions uniformes */}
+              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
+                <img 
+                  src="/images/inrae.svg" 
+                  alt="INRAE" 
+                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
+                />
+              </div>
+              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
+                <img 
+                  src="/images/Chambragri.svg" 
+                  alt="Chambres d'Agriculture"
+                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
+                />
+              </div>
+              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
+                <img 
+                  src="/images/off.svg" 
+                  alt="OFF" 
+                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
+                />
+              </div>
+              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
+                <img 
+                  src="/images/rmtal.svg" 
+                  alt="RMT Alimentation locale" 
+                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
 
-                    {/* Option "Je ne sais pas" intégrée dans la même grille */}
-                    <div 
-                      onClick={() => goToNextQuestion()}
-                      className="border p-4 rounded-lg cursor-pointer transition-all border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900 hover:bg-yellow-100 dark:hover:bg-yellow-800 shadow-md"
-                    >
-                      <div className="flex items-start">
-                        <HelpCircle size={24} className="mr-3 text-yellow-600 dark:text-yellow-300" />
-                        <div className="flex-grow">
-                          <h3 className="font-semibold text-lg text-yellow-700 dark:text-yellow-200">
-                            Je ne sais pas
-                          </h3>
-                          <p className="text-sm text-yellow-600 dark:text-yellow-300 mt-1">
-                            Je ne suis pas sûr ou cela m'est égal
-                          </p>
+export default Assistant;
                         </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Option "Je ne sais pas" intégrée dans la même grille */}
+                  <div 
+                    onClick={() => goToNextQuestion()}
+                    className="border p-4 rounded-lg cursor-pointer transition-all border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900 hover:bg-yellow-100 dark:hover:bg-yellow-800 shadow-md"
+                  >
+                    <div className="flex items-start">
+                      <HelpCircle size={24} className="mr-3 text-yellow-600 dark:text-yellow-300" />
+                      <div className="flex-grow">
+                        <h3 className="font-semibold text-lg text-yellow-700 dark:text-yellow-200">
+                          Je ne sais pas
+                        </h3>
+                        <p className="text-sm text-yellow-600 dark:text-yellow-300 mt-1">
+                          Je ne suis pas sûr ou cela m'est égal
+                        </p>
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Message pour rassurer l'utilisateur */}
-                  <p className="text-sm text-gray-500 dark:text-gray-400 italic mt-8 mb-4 text-center">
-                    Vous pouvez passer cette question si vous n'avez pas de préférence particulière.
-                  </p>
-                  
-                  {/* Boutons de navigation */}
-                  <div className="flex justify-between mt-6">
-                    <button 
-                      onClick={goToPreviousQuestion}
-                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center"
-                    >
-                      <ArrowLeft size={18} className="mr-2" /> Précédent
-                    </button>
-                    
-                    <button 
-                      onClick={goToNextQuestion}
-                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
-                    >
-                      {currentQuestion.nextQuestion === 'final' ? 'Voir les résultats' : 'Suivant'} <ArrowRight size={18} className="ml-2" />
-                    </button>
-                  </div>
                 </div>
-              )}
-
                 
                 {/* Message pour rassurer l'utilisateur */}
                 <p className="text-sm text-gray-500 dark:text-gray-400 italic mt-8 mb-4 text-center">
@@ -863,67 +898,3 @@ const Assistant = () => {
                     <RefreshCw size={18} className="mr-2" /> Recommencer avec de nouveaux critères
                   </button>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-      </main>
-      
-      {/* Pied de page */}
-{/* Modifier le footer existant */}
-      <footer className="bg-white dark:bg-gray-800 shadow-md mt-8 py-4">
-        <div className="container mx-auto">
-          {/* Texte existant */}
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
-            <p>Assistant de sélection pour les plateformes de vente en ligne pour produits agricoles</p>
-            <p className="mt-2">
-              <a href="/" className="text-green-600 dark:text-green-400 hover:underline">
-                Retour au site principal
-              </a>
-            </p>
-          </div>
-          
-          {/* Nouvelle section pour les logos */}
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-center text-gray-500 dark:text-gray-500 mb-3">
-              Un projet porté par
-            </p>
-            <div className="flex justify-center items-center flex-wrap gap-6 sm:gap-10 px-4">
-              {/* Logo container avec dimensions uniformes */}
-              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
-                <img 
-                  src="/images/inrae.svg" 
-                  alt="INRAE" 
-                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
-                />
-              </div>
-              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
-                <img 
-                  src="/images/Chambragri.svg" 
-                  alt="Chambres d'Agriculture"
-                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
-                />
-              </div>
-              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
-                <img 
-                  src="/images/off.svg" 
-                  alt="OFF" 
-                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
-                />
-              </div>
-              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
-                <img 
-                  src="/images/rmtal.svg" 
-                  alt="RMT Alimentation locale" 
-                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-export default Assistant;
