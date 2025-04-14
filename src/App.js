@@ -498,17 +498,21 @@ const Assistant = () => {
             )}
             
             {/* Questions à choix */}
-            {currentQuestion.type === 'choice' && (
+             {currentQuestion.type === 'choice' && (
               <div>
-                <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
-                <p className="mb-6 text-gray-600 dark:text-gray-300 italic">{currentQuestion.description}</p>
-                
+                <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">
+                  {currentQuestion.title}
+                </h2>
+                <p className="mb-6 text-gray-600 dark:text-gray-300 italic">
+                  {currentQuestion.description}
+                </p>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {currentQuestion.choices.map(choice => {
                     const isSelected = currentQuestion.multiple 
                       ? answers[currentQuestionId]?.includes(choice.id)
                       : answers[currentQuestionId] === choice.id;
-                      
+
                     return (
                       <div 
                         key={choice.id}
@@ -524,7 +528,6 @@ const Assistant = () => {
                           {choice.icon && (
                             <span className="text-2xl mr-3">{choice.icon}</span>
                           )}
-                          
                           <div className="flex-grow">
                             <h3 className="font-semibold text-lg flex items-center">
                               {choice.label}
@@ -533,27 +536,37 @@ const Assistant = () => {
                               )}
                             </h3>
                             {choice.description && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{choice.description}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                {choice.description}
+                              </p>
                             )}
                           </div>
                         </div>
                       </div>
                     );
                   })}
-                </div>
-                
-                {/* Option "Je ne sais pas" */}
-                <div 
-                  onClick={() => goToNextQuestion()}
-                  className="border p-4 rounded-lg cursor-pointer transition-all border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 mt-6 bg-gray-50 dark:bg-gray-800 max-w-md mx-auto"
-                >
-                  <div className="flex items-start">
-                    <div className="flex-grow">
-                      <h3 className="font-semibold text-lg text-gray-500 dark:text-gray-400 text-center">Je ne sais pas</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 text-center">Je ne suis pas sûr ou cela m'est égal</p>
+
+                  {/* Option "Je ne sais pas" */}
+                  <div 
+                    onClick={() => goToNextQuestion()}
+                    className="border p-4 rounded-lg cursor-pointer transition-all border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900 hover:bg-yellow-100 dark:hover:bg-yellow-800 shadow-md"
+                  >
+                    <div className="flex items-start">
+                      <HelpCircle size={24} className="mr-3 text-yellow-600 dark:text-yellow-300" />
+                      <div className="flex-grow">
+                        <h3 className="font-semibold text-lg text-yellow-700 dark:text-yellow-200">
+                          Je ne sais pas
+                        </h3>
+                        <p className="text-sm text-yellow-600 dark:text-yellow-300 mt-1">
+                          Je ne suis pas sûr ou cela m'est égal
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
                 
                 {/* Message pour rassurer l'utilisateur */}
                 <p className="text-sm text-gray-500 dark:text-gray-400 italic mt-8 mb-4 text-center">
