@@ -815,14 +815,31 @@ const Assistant = () => {
       </main>
       
       {/* Pied de page */}
+{/* Modifier le footer existant */}
       <footer className="bg-white dark:bg-gray-800 shadow-md mt-8 py-4">
-        <div className="container mx-auto text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>Assistant de sélection de plateformes de vente directe en ligne de produits alimentaires</p>
-          <p className="mt-2">
-          <a href="https://www.oad-venteenligne.org/" className="text-green-600 dark:text-green-400 hover:underline" target="_blank" rel="noopener noreferrer">
-              Retour au site principal
-            </a>
-          </p>
+        <div className="container mx-auto">
+          {/* Texte existant */}
+          <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p>Assistant de sélection pour les plateformes de vente en ligne pour produits agricoles</p>
+            <p className="mt-2">
+              <a href="/" className="text-green-600 dark:text-green-400 hover:underline">
+                Retour au site principal
+              </a>
+            </p>
+          </div>
+          
+          {/* Nouvelle section pour les logos */}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs text-center text-gray-500 dark:text-gray-500 mb-3">
+              Un projet soutenu par
+            </p>
+            <div className="flex justify-center items-center flex-wrap gap-4 sm:gap-8 px-4">
+              <img src="/images/Chambragri.svg" alt="Chambres d'Agriculture" className="h-8 sm:h-12 opacity-80 hover:opacity-100 transition-opacity" />
+              <img src="/images/inrae.svg" alt="INRAE" className="h-8 sm:h-12 opacity-80 hover:opacity-100 transition-opacity" />
+              <img src="/images/off.svg" alt="OFF" className="h-8 sm:h-12 opacity-80 hover:opacity-100 transition-opacity" />
+              <img src="/images/rmtal.svg" alt="RMT Alimentation locale" className="h-8 sm:h-12 opacity-80 hover:opacity-100 transition-opacity" />
+            </div>
+          </div>
         </div>
       </footer>
     </div>
