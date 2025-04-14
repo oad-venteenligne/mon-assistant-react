@@ -831,21 +831,21 @@ const Assistant = () => {
           {/* Nouvelle section pour les logos */}
                     <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-center text-gray-500 dark:text-gray-500 mb-3">
-              Un projet soutenu par
+              Un projet porté par
             </p>
             <div className="flex justify-center items-center flex-wrap gap-6 sm:gap-10 px-4">
               {/* Logo container avec dimensions uniformes */}
               <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
                 <img 
-                  src="/images/Chambragri.svg" 
-                  alt="Chambres d'Agriculture" 
+                  src="/images/inrae.svg" 
+                  alt="INRAE" 
                   className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
                 />
               </div>
               <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
                 <img 
-                  src="/images/inrae.svg" 
-                  alt="INRAE" 
+                  src="/images/Chambragri.svg" 
+                  alt="Chambres d'Agriculture"
                   className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
                 />
               </div>
