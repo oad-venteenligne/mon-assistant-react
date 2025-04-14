@@ -603,11 +603,6 @@ const Assistant = () => {
 };
 
 export default Assistant;
-                        </div>
-                      </div>
-                    );
-                  })}
-
                   {/* Option "Je ne sais pas" intégrée dans la même grille */}
                   <div 
                     onClick={() => goToNextQuestion()}
