@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, RefreshCw, CheckCircle, ExternalLink, Search, HelpCircle } from 'lucide-react';
 
+// Imports pour Firebase
+import { db } from './firebase';
+import { collection, addDoc } from 'firebase/firestore';
+
 // Configuration des questions
 const questions = [
   {
@@ -168,6 +172,29 @@ const questions = [
       'emailing': 'listeListeOuinonid_emailing'
     },
     multiple: true,
+    nextQuestion: 'user_info'  // Modifié de 'final' à 'user_info'
+  },
+  // Nouvelles questions pour le mini-questionnaire
+  {
+    id: 'user_info',
+    title: "Pour mieux vous connaître",
+    description: "Ces informations nous aideront à améliorer notre outil. Elles resteront confidentielles.",
+    type: 'choice',
+    choices: [
+      { id: 'producer', label: 'Je suis producteur', description: "Agriculteur, éleveur, maraîcher..." },
+      { id: 'distributor', label: 'Je suis distributeur', description: "Organisateur de circuit court, épicerie..." },
+      { id: 'service', label: 'Je suis accompagnateur', description: "Conseil, développement, formation..." },
+      { id: 'other', label: 'Autre', description: "Consommateur, étudiant, curieux..." }
+    ],
+    filter: 'userProfile',
+    multiple: false,
+    nextQuestion: 'contact_info'
+  },
+  {
+    id: 'contact_info',
+    title: "Souhaitez-vous être informé des mises à jour ?",
+    description: "Laissez-nous votre email si vous souhaitez recevoir des informations sur les nouvelles plateformes et fonctionnalités.",
+    type: 'email',
     nextQuestion: 'final'
   },
   {
@@ -310,8 +337,55 @@ const Assistant = () => {
     });
   };
 
+  // Fonction pour enregistrer les données utilisateur
+  const saveUserData = async () => {
+    try {
+      // Générer un ID de session unique si pas déjà existant
+      const sessionId = localStorage.getItem('assistant_session_id') || 
+                       'session_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+      
+      if (!localStorage.getItem('assistant_session_id')) {
+        localStorage.setItem('assistant_session_id', sessionId);
+      }
+      
+      // Enregistrer les informations de l'utilisateur
+      await addDoc(collection(db, "user_info"), {
+        sessionId: sessionId,
+        userProfile: answers['user_info'],
+        email: answers['email'] || null,
+        timestamp: new Date(),
+        userAgent: navigator.userAgent
+      });
+      
+      console.log("Informations utilisateur enregistrées avec succès");
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement des informations utilisateur:", error);
+    }
+  };
+
+  // Fonction pour suivre les clics sur les résultats
+  const trackResultClick = async (result, index) => {
+    try {
+      const sessionId = localStorage.getItem('assistant_session_id');
+      if (!sessionId) return;
+      
+      await addDoc(collection(db, "result_clicks"), {
+        sessionId: sessionId,
+        platformId: result.item.id_fiche || '',
+        platformName: result.item.bf_titre || '',
+        position: index + 1,
+        matchPercentage: result.matchPercentage,
+        timestamp: new Date()
+      });
+      
+      console.log("Clic sur résultat enregistré");
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement du clic:", error);
+    }
+  };
+
   // Fonction pour calculer les résultats
-  const calculateResults = () => {
+  const calculateResults = async () => {
     if (data.length === 0) {
       setResults([]);
       return;
@@ -377,12 +451,51 @@ const Assistant = () => {
       .filter(result => result.matchPercentage > 0); // Filtre les résultats avec un score positif
     
     setResults(sortedResults);
+    
+    // Enregistrer les résultats dans Firebase
+    try {
+      // Générer un ID de session unique si pas déjà existant
+      const sessionId = localStorage.getItem('assistant_session_id') || 
+                       'session_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+      
+      if (!localStorage.getItem('assistant_session_id')) {
+        localStorage.setItem('assistant_session_id', sessionId);
+      }
+      
+      // Enregistrer les critères de recherche
+      await addDoc(collection(db, "search_criteria"), {
+        sessionId: sessionId,
+        criteria: answers,
+        timestamp: new Date()
+      });
+      
+      // Enregistrer les résultats affichés
+      await addDoc(collection(db, "search_results"), {
+        sessionId: sessionId,
+        results: sortedResults.slice(0, 10).map((r, idx) => ({
+          platformId: r.item.id_fiche || '',
+          platformName: r.item.bf_titre || '',
+          position: idx + 1,
+          matchPercentage: r.matchPercentage
+        })),
+        timestamp: new Date()
+      });
+      
+      console.log("Résultats enregistrés avec succès");
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement des résultats:", error);
+    }
   };
 
   // Navigation vers la question suivante
   const goToNextQuestion = () => {
     const currentQuestion = questions.find(q => q.id === currentQuestionId);
     if (currentQuestion && currentQuestion.nextQuestion) {
+      // Si on passe à la page finale à partir de la page d'email, enregistrer les données
+      if (currentQuestionId === 'contact_info' && currentQuestion.nextQuestion === 'final') {
+        saveUserData();
+      }
+      
       setCurrentQuestionId(currentQuestion.nextQuestion);
     }
   };
@@ -497,22 +610,19 @@ const Assistant = () => {
               </div>
             )}
             
-            {/* Questions à choix */}
+           {/* Questions à choix */}
             {currentQuestion.type === 'choice' && (
               <div>
-                <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">
-                  {currentQuestion.title}
-                </h2>
-                <p className="mb-6 text-gray-600 dark:text-gray-300 italic">
-                  {currentQuestion.description}
-                </p>
-
+                <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
+                <p className="mb-6 text-gray-600 dark:text-gray-300 italic">{currentQuestion.description}</p>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {/* Options de réponses principales */}
                   {currentQuestion.choices.map(choice => {
                     const isSelected = currentQuestion.multiple 
                       ? answers[currentQuestionId]?.includes(choice.id)
                       : answers[currentQuestionId] === choice.id;
-
+                      
                     return (
                       <div 
                         key={choice.id}
@@ -528,6 +638,7 @@ const Assistant = () => {
                           {choice.icon && (
                             <span className="text-2xl mr-3">{choice.icon}</span>
                           )}
+                          
                           <div className="flex-grow">
                             <h3 className="font-semibold text-lg flex items-center">
                               {choice.label}
@@ -536,87 +647,23 @@ const Assistant = () => {
                               )}
                             </h3>
                             {choice.description && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                {choice.description}
-                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{choice.description}</p>
                             )}
+                          </div>
                         </div>
-            )}
-          </div>
-        )}
-      </main>
-      
-      {/* Pied de page */}
-      <footer className="bg-white dark:bg-gray-800 shadow-md mt-8 py-4">
-        <div className="container mx-auto">
-          {/* Texte existant */}
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
-            <p>Assistant de sélection pour les plateformes de vente en ligne pour produits agricoles</p>
-            <p className="mt-2">
-              <a href="/" className="text-green-600 dark:text-green-400 hover:underline">
-                Retour au site principal
-              </a>
-            </p>
-          </div>
-          
-          {/* Nouvelle section pour les logos */}
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-center text-gray-500 dark:text-gray-500 mb-3">
-              Un projet porté par
-            </p>
-            <div className="flex justify-center items-center flex-wrap gap-6 sm:gap-10 px-4">
-              {/* Logo container avec dimensions uniformes */}
-              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
-                <img 
-                  src="/images/inrae.svg" 
-                  alt="INRAE" 
-                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
-                />
-              </div>
-              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
-                <img 
-                  src="/images/Chambragri.svg" 
-                  alt="Chambres d'Agriculture"
-                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
-                />
-              </div>
-              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
-                <img 
-                  src="/images/off.svg" 
-                  alt="OFF" 
-                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
-                />
-              </div>
-              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
-                <img 
-                  src="/images/rmtal.svg" 
-                  alt="RMT Alimentation locale" 
-                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
+                      </div>
+                    );
+                  })}
 
-export default Assistant;
-                  {/* Option "Je ne sais pas" intégrée dans la même grille */}
+                  {/* Option "Je ne sais pas" - maintenant dans la même grille */}
                   <div 
                     onClick={() => goToNextQuestion()}
-                    className="border p-4 rounded-lg cursor-pointer transition-all border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900 hover:bg-yellow-100 dark:hover:bg-yellow-800 shadow-md"
+                    className="border p-4 rounded-lg cursor-pointer transition-all border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 bg-gray-50 dark:bg-gray-800"
                   >
                     <div className="flex items-start">
-                      <HelpCircle size={24} className="mr-3 text-yellow-600 dark:text-yellow-300" />
                       <div className="flex-grow">
-                        <h3 className="font-semibold text-lg text-yellow-700 dark:text-yellow-200">
-                          Je ne sais pas
-                        </h3>
-                        <p className="text-sm text-yellow-600 dark:text-yellow-300 mt-1">
-                          Je ne suis pas sûr ou cela m'est égal
-                        </p>
+                        <h3 className="font-semibold text-lg text-gray-500 dark:text-gray-400">Je ne sais pas</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Je ne suis pas sûr ou cela m'est égal</p>
                       </div>
                     </div>
                   </div>
@@ -641,6 +688,41 @@ export default Assistant;
                     className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
                   >
                     {currentQuestion.nextQuestion === 'final' ? 'Voir les résultats' : 'Suivant'} <ArrowRight size={18} className="ml-2" />
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Question pour collecter l'email */}
+            {currentQuestion.type === 'email' && (
+              <div>
+                <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
+                <p className="mb-6 text-gray-600 dark:text-gray-300 italic">{currentQuestion.description}</p>
+                
+                <div className="mb-6">
+                  <input
+                    type="email"
+                    placeholder="Votre adresse email (optionnel)"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:focus:ring-green-600 dark:focus:border-green-600"
+                    value={answers['email'] || ''}
+                    onChange={(e) => setAnswers(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
+                
+                {/* Boutons de navigation */}
+                <div className="flex justify-between mt-6">
+                  <button 
+                    onClick={goToPreviousQuestion}
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center"
+                  >
+                    <ArrowLeft size={18} className="mr-2" /> Précédent
+                  </button>
+                  
+                  <button 
+                    onClick={goToNextQuestion}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                  >
+                    Voir les résultats <ArrowRight size={18} className="ml-2" />
                   </button>
                 </div>
               </div>
@@ -766,6 +848,7 @@ export default Assistant;
                                   href={result.item.bf_urloutil || `https://www.oad-venteenligne.org/?${result.item.id_fiche}`} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
+                                  onClick={() => trackResultClick(result, index)}
                                   className="inline-flex items-center text-green-600 dark:text-green-400 hover:underline mt-2"
                                 >
                                   Site Web de l'outil <ExternalLink size={14} className="ml-1" />
@@ -836,20 +919,6 @@ export default Assistant;
                                   <div key={questionId} className="mb-4">
                                     <h4 className="font-medium mb-2">{question.title.replace('?', '')}</h4>
                                     
-                                    {matchingCriteria.length > 0 && (
-                                      <div className="mb-2">
-                                        <h5 className="text-xs uppercase text-green-600 dark:text-green-400 mb-1">Critères correspondants</h5>
-                                        <ul className="space-y-1">
-                                          {matchingCriteria.map((text, idx) => (
-                                            <li key={idx} className="flex items-start">
-                                              <CheckCircle size={14} className="text-green-500 mr-2 mt-0.5 shrink-0" />
-                                              <span>{text}</span>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
-                                    
                                     {nonMatchingCriteria.length > 0 && (
                                       <div>
                                         <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">Critères non correspondants</h5>
@@ -893,3 +962,67 @@ export default Assistant;
                     <RefreshCw size={18} className="mr-2" /> Recommencer avec de nouveaux critères
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+      
+      {/* Pied de page */}
+      <footer className="bg-white dark:bg-gray-800 shadow-md mt-8 py-4">
+        <div className="container mx-auto">
+          {/* Texte existant */}
+          <div className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p>Assistant de sélection pour les plateformes de vente en ligne pour produits agricoles</p>
+            <p className="mt-2">
+              <a href="/" className="text-green-600 dark:text-green-400 hover:underline">
+                Retour au site principal
+              </a>
+            </p>
+          </div>
+          
+          {/* Nouvelle section pour les logos */}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs text-center text-gray-500 dark:text-gray-500 mb-3">
+              Un projet porté par
+            </p>
+            <div className="flex justify-center items-center flex-wrap gap-6 sm:gap-10 px-4">
+              {/* Logo container avec dimensions uniformes */}
+              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
+                <img 
+                  src="/images/rmtal.svg" 
+                  alt="RMT Alimentation locale" 
+                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
+                />
+              </div>
+              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
+                <img 
+                  src="/images/inrae.svg" 
+                  alt="INRAE" 
+                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
+                />
+              </div>
+              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
+                <img 
+                  src="/images/Chambragri.svg" 
+                  alt="Chambres d'Agriculture"
+                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
+                />
+              </div>
+              <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
+                <img 
+                  src="/images/off.svg" 
+                  alt="OFF" 
+                  className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default Assistant;
+                                   
