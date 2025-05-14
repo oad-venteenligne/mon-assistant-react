@@ -2,15 +2,14 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
-// Configuration Firebase - REMPLACEZ par VOS identifiants copiés depuis la console Firebase
+// Configuration Firebase - Utilisation des variables d'environnement
 const firebaseConfig = {
-    apiKey: "AIzaSyA67p7DM-1MVK9AutUc2PEOwPnGomQNnBI",
-    authDomain: "app-react-oad-vente-en-ligne.firebaseapp.com",
-    projectId: "app-react-oad-vente-en-ligne",
-    storageBucket: "app-react-oad-vente-en-ligne.firebasestorage.app",
-    messagingSenderId: "148985238480",
-    appId: "1:148985238480:web:f44ae1dc17dbe601cadfd5",
-    measurementId: "G-J1W37G4YLF"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
 // Initialiser Firebase
