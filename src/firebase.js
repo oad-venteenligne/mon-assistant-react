@@ -4,7 +4,7 @@ import { getFirestore } from 'firebase/firestore';
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "",
+  apiKey: "AIzaSyDzEv6ogF8bdO1xjOuC7RA62nZLsSB0TPA",
   authDomain: "oad-react.firebaseapp.com",
   projectId: "oad-react",
   storageBucket: "oad-react.firebasestorage.app",
