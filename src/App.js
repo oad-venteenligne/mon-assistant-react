@@ -159,6 +159,20 @@ const questions = [
   ],
   filter: 'checkboxListeOptionpaiementid_optionpaiement',
   multiple: true,
+  nextQuestion: 'weight_adjustment'
+},
+  {
+  id: 'weight_adjustment',
+  title: "Avez-vous besoin d'ajuster le poids des produits ?",
+  description: "Choisissez si vous avez besoin d'ajuster le poids des produits après la commande et comment.",
+  type: 'choice',
+  choices: [
+    { id: '2', label: 'Oui, avec création d\'un avoir', description: "Un avoir est créé en cas de différence de poids" },
+    { id: '3', label: 'Oui, avec ajustement automatique du prix', description: "Le prix final est ajusté automatiquement en fonction du poids réel" },
+    { id: '1', label: 'Non', description: "Pas besoin d'ajustement de poids" }
+  ],
+  filter: 'listeListe19Ajustement',
+  multiple: false,
   nextQuestion: 'logistics'
 },
   {
