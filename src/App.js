@@ -1288,8 +1288,9 @@ const calculateResults = async () => {
                                   return null;
                                 })}
                                 
+
                                 {/* Affichage de la couverture géographique si pertinent */}
-                                {item['listeListeOuinonid_echellelocalisation'] === '1' && (
+                                {result.item['listeListeOuinonid_echellelocalisation'] === '1' && (
                                   <span className="inline-flex items-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
                                     <span className="mr-1">🇫🇷</span>
                                     France entière
