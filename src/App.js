@@ -358,35 +358,65 @@ const Assistant = () => {
     }
   }, [currentQuestionId, answers, data]);
 
-  // Gérer les choix de l'utilisateur
-  const handleAnswer = (questionId, answer) => {
-    const question = questions.find(q => q.id === questionId);
+ // Gérer les choix de l'utilisateur
+const handleAnswer = (questionId, answer) => {
+  const question = questions.find(q => q.id === questionId);
+  
+  // Mettre à jour les réponses
+  setAnswers(prev => {
+    const newAnswers = { ...prev };
     
-    // Mettre à jour les réponses
-    setAnswers(prev => {
-      const newAnswers = { ...prev };
-      
-      if (question.multiple) {
-        // Pour les questions à choix multiples
-        if (!newAnswers[questionId]) {
-          newAnswers[questionId] = [];
-        }
-        
-        const index = newAnswers[questionId].indexOf(answer);
-        if (index === -1) {
-          newAnswers[questionId] = [...newAnswers[questionId], answer];
-        } else {
-          newAnswers[questionId] = newAnswers[questionId].filter(a => a !== answer);
-        }
-      } else {
-        // Pour les questions à choix unique
-        newAnswers[questionId] = answer;
+    if (question.multiple) {
+      // Pour les questions à choix multiples
+      if (!newAnswers[questionId]) {
+        newAnswers[questionId] = [];
       }
       
-      return newAnswers;
-    });
-  };
+      const index = newAnswers[questionId].indexOf(answer);
+      if (index === -1) {
+        newAnswers[questionId] = [...newAnswers[questionId], answer];
+      } else {
+        newAnswers[questionId] = newAnswers[questionId].filter(a => a !== answer);
+      }
+    } else {
+      // Pour les questions à choix unique
+      newAnswers[questionId] = answer;
+    }
+    
+    return newAnswers;
+  });
+};
 
+// Navigation vers la question suivante
+const goToNextQuestion = () => {
+  const currentQuestion = questions.find(q => q.id === currentQuestionId);
+  
+  // Si on est sur la question du profil et qu'aucun choix n'est fait, bloquer
+  if (currentQuestionId === 'user_info' && !answers[currentQuestionId]) {
+    // Simple alerte ou message visuel
+    alert("Veuillez sélectionner une option pour continuer");
+    return;
+  }
+  
+  if (currentQuestion && currentQuestion.nextQuestion) {
+    // Vérifier si nextQuestion est une fonction (navigation conditionnelle)
+    if (typeof currentQuestion.nextQuestion === 'function') {
+      const nextQuestionId = currentQuestion.nextQuestion(answers[currentQuestionId]);
+      setCurrentQuestionId(nextQuestionId);
+    } else {
+      // Navigation simple avec une chaîne
+      setCurrentQuestionId(currentQuestion.nextQuestion);
+    }
+    
+    // Si on passe à la page finale à partir de la page d'email, enregistrer les données
+    if (currentQuestionId === 'contact_info' && 
+        (currentQuestion.nextQuestion === 'final' || 
+         (typeof currentQuestion.nextQuestion === 'function' && 
+          currentQuestion.nextQuestion(answers[currentQuestionId]) === 'final'))) {
+      saveUserData();
+    }
+  }
+};
   // Fonction pour enregistrer les données utilisateur
   const saveUserData = async () => {
     try {
