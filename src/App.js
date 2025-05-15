@@ -278,6 +278,7 @@ const Assistant = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAllResults, setShowAllResults] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [navigationHistory, setNavigationHistory] = useState([]);
 
   // Index des questions pour la navigation
   const questionIndex = questions.reduce((acc, q, idx) => {
@@ -398,24 +399,25 @@ const goToNextQuestion = () => {
   }
   
   if (currentQuestion && currentQuestion.nextQuestion) {
+    let nextQuestionId;
+    
     // Vérifier si nextQuestion est une fonction (navigation conditionnelle)
     if (typeof currentQuestion.nextQuestion === 'function') {
-      const nextQuestionId = currentQuestion.nextQuestion(answers[currentQuestionId]);
-      setCurrentQuestionId(nextQuestionId);
+      nextQuestionId = currentQuestion.nextQuestion(answers[currentQuestionId]);
     } else {
       // Navigation simple avec une chaîne
-      setCurrentQuestionId(currentQuestion.nextQuestion);
+      nextQuestionId = currentQuestion.nextQuestion;
     }
     
     // Si on passe à la page finale à partir de la page d'email, enregistrer les données
-    if (currentQuestionId === 'contact_info' && 
-        (currentQuestion.nextQuestion === 'final' || 
-         (typeof currentQuestion.nextQuestion === 'function' && 
-          currentQuestion.nextQuestion(answers[currentQuestionId]) === 'final'))) {
+    if (currentQuestionId === 'contact_info' && nextQuestionId === 'final') {
       saveUserData();
     }
+    
+    setCurrentQuestionId(nextQuestionId);
   }
 };
+
   // Fonction pour enregistrer les données utilisateur
   const saveUserData = async () => {
     try {
@@ -566,13 +568,39 @@ const goToNextQuestion = () => {
     }
   };
 
+  // Historique de navigation pour le retour en arrière
+  useEffect(() => {
+    // Si on change de question, mettre à jour l'historique
+    // Mais ne pas stocker la page d'accueil dans l'historique
+    if (currentQuestionId !== 'welcome') {
+      setNavigationHistory(prev => {
+        // Éviter les doublons consécutifs
+        if (prev.length > 0 && prev[prev.length - 1] === currentQuestionId) {
+          return prev;
+        }
+        return [...prev, currentQuestionId];
+      });
+    }
+  }, [currentQuestionId]);
 
   // Navigation vers la question précédente
   const goToPreviousQuestion = () => {
-    // Trouver l'index de la question actuelle
+    // Cas spécial: quand on est à la question "clients" après avoir répondu "non" à multiproducer
+    if (currentQuestionId === 'clients' && answers['multiproducer'] === 'no') {
+      setCurrentQuestionId('multiproducer');
+      return;
+    }
+    
+    // Cas spécial: quand on est dans "multiproducer_services", on retourne à "multiproducer"
+    if (currentQuestionId === 'multiproducer_services') {
+      setCurrentQuestionId('multiproducer');
+      return;
+    }
+    
+    // Comportement normal - trouver l'index de la question actuelle
     const currentIndex = questionIndex[currentQuestionId];
     if (currentIndex > 0) {
-      // Aller à la question précédente
+      // Aller à la question précédente dans l'ordre du tableau
       setCurrentQuestionId(questions[currentIndex - 1].id);
     }
   };
@@ -1092,4 +1120,3 @@ const goToNextQuestion = () => {
 };
 
 export default Assistant;
-                                   
