@@ -516,23 +516,69 @@ const Assistant = () => {
   }, {});
 
   // Charger les données initiales
-  useEffect(() => {
-    // Essayer de charger depuis le localStorage d'abord
-    const cachedData = localStorage.getItem('toolsDataCache');
-    
-    if (cachedData) {
-      try {
-        setData(JSON.parse(cachedData));
+useEffect(() => {
+  // Essayer de charger depuis le localStorage d'abord
+  const cachedDataString = localStorage.getItem('toolsDataCache');
+  const cacheTimestampString = localStorage.getItem('toolsDataCacheTimestamp');
+  
+  if (cachedDataString && cacheTimestampString) {
+    try {
+      // Vérifier si le cache est périmé (par exemple après 1 jours)
+      const cacheTimestamp = parseInt(cacheTimestampString);
+      const currentTime = Date.now();
+      const cacheExpirationMs = 24 * 60 * 60 * 1000; // 1 jours en millisecondes
+      
+      if (currentTime - cacheTimestamp < cacheExpirationMs) {
+        // Le cache n'est pas périmé, on l'utilise
+        setData(JSON.parse(cachedDataString));
         setLoading(false);
-      } catch (e) {
-        console.error("Erreur lors de la lecture du cache:", e);
+      } else {
+        // Le cache est périmé, on récupère de nouvelles données
         fetchData();
       }
-    } else {
+    } catch (e) {
+      console.error("Erreur lors de la lecture du cache:", e);
       fetchData();
     }
-  }, []);
+  } else {
+    fetchData();
+  }
+}, []);
 
+// Fonction pour fetcher les données modifiée
+const fetchData = () => {
+  setLoading(true);
+  
+  // Simulation de chargement pour la démo
+  // En production, utilisez votre API réelle
+  setTimeout(() => {
+    fetch("/api/data")
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erreur réseau: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        const dataArray = Object.values(data);
+        setData(dataArray);
+        
+        // Mettre en cache avec un timestamp
+        try {
+          localStorage.setItem('toolsDataCache', JSON.stringify(dataArray));
+          localStorage.setItem('toolsDataCacheTimestamp', Date.now().toString());
+        } catch (e) {
+          console.warn("Impossible de mettre en cache les données:", e);
+        }
+        
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Erreur lors du chargement des données:", error);
+        setLoading(false);
+      });
+  }, 1000);
+};
   // Mettre à jour les départements lorsque la région est sélectionnée
   useEffect(() => {
     if (currentQuestionId === 'department_selection' && answers['region_selection']) {
@@ -545,41 +591,7 @@ const Assistant = () => {
     }
   }, [currentQuestionId, answers]);
 
-  // Fonction pour fetcher les données
-  const fetchData = () => {
-    setLoading(true);
-    
-    // Simulation de chargement pour la démo
-    // En production, utilisez votre API réelle
-    setTimeout(() => {
-      fetch("/api/data")
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Erreur réseau: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(data => {
-          const dataArray = Object.values(data);
-          setData(dataArray);
-          
-          // Mettre en cache
-          try {
-            localStorage.setItem('toolsDataCache', JSON.stringify(dataArray));
-          } catch (e) {
-            console.warn("Impossible de mettre en cache les données:", e);
-          }
-          
-          setLoading(false);
-        })
-        .catch(error => {
-          console.error("Erreur lors du chargement des données:", error);
-          setLoading(false);
-        });
-    }, 1000);
-  };
-
-  // Mettre à jour la barre de progression
+   // Mettre à jour la barre de progression
   useEffect(() => {
     if (currentQuestionId === 'welcome') {
       setProgress(0);
