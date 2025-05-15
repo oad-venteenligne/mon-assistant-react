@@ -249,8 +249,24 @@ const questions = [
     'carte': 'listeListeOuinonid_carte'
   },
   multiple: true,
+  nextQuestion: 'digital_platform'
+},
+ 
+{
+  id: 'digital_platform',
+  title: "Quel support numérique souhaitez-vous ?",
+  description: "Sélectionnez le type de support numérique qui vous intéresse pour votre outil de vente.",
+  type: 'choice',
+  choices: [
+    { id: '1', label: 'Site internet', description: "Une plateforme accessible depuis un navigateur web" },
+    { id: '2', label: 'Application mobile', description: "Une application dédiée pour smartphones et tablettes" }
+  ],
+  filter: 'checkboxListe021Typesupportplateformeid_typesupportplateforme',
+  multiple: true,
   nextQuestion: 'user_info'
 },
+  
+  
   // Nouvelles questions pour le mini-questionnaire
   {
     id: 'user_info',
