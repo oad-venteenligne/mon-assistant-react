@@ -145,8 +145,22 @@ const questions = [
     ],
     filter: 'checkboxListeSystemecommandeid_systemecommande',
     multiple: true,
-    nextQuestion: 'logistics'
+    nextQuestion: 'payment_options'
   },
+  
+{
+  id: 'payment_options',
+  title: "Quelles options de paiement souhaitez-vous ?",
+  description: "Sélectionnez les méthodes de paiement que vous voulez proposer à vos clients.",
+  type: 'choice',
+  choices: [
+    { id: '1', label: 'Paiement en ligne à la commande', description: "Les clients paient en ligne au moment de commander" },
+    { id: '2', label: 'Paiement à la livraison', description: "Les clients paient lors de la réception des produits" }
+  ],
+  filter: 'checkboxListeOptionpaiementid_optionpaiement',
+  multiple: true,
+  nextQuestion: 'logistics'
+},
   {
     id: 'logistics',
     title: "Quelles fonctionnalités logistiques sont importantes pour vous ?",
