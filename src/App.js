@@ -566,26 +566,6 @@ const goToNextQuestion = () => {
     }
   };
 
-// Navigation vers la question suivante
-const goToNextQuestion = () => {
-  const currentQuestion = questions.find(q => q.id === currentQuestionId);
-  
-  // Si on est sur la question du profil et qu'aucun choix n'est fait, bloquer
-  if (currentQuestionId === 'user_info' && !answers[currentQuestionId]) {
-    // Simple alerte ou message visuel
-    alert("Veuillez sélectionner une option pour continuer");
-    return;
-  }
-  
-  if (currentQuestion && currentQuestion.nextQuestion) {
-    // Si on passe à la page finale à partir de la page d'email, enregistrer les données
-    if (currentQuestionId === 'contact_info' && currentQuestion.nextQuestion === 'final') {
-      saveUserData();
-    }
-    
-    setCurrentQuestionId(currentQuestion.nextQuestion);
-  }
-};
 
   // Navigation vers la question précédente
   const goToPreviousQuestion = () => {
