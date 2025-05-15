@@ -36,7 +36,6 @@ const questions = [
   choices: [
     { id: 'yes', label: 'Oui, je souhaite vendre les produits de plusieurs producteurs', description: "Je veux proposer une offre diversifiée de plusieurs producteurs" },
     { id: 'no', label: 'Non, je souhaite uniquement vendre mes propres produits', description: "Je souhaite uniquement commercialiser ma production" },
-    { id: 'idk', label: 'Je ne sais pas', description: "Je n'ai pas encore décidé" }
   ],
   filter: 'multiproducer',
   multiple: false,
