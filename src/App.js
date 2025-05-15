@@ -12,8 +12,171 @@ const questions = [
     title: "Bienvenue dans l'assistant de sélection",
     description: "Nous allons vous aider à trouver les meilleures plateformes en ligne pour commercialiser vos produits alimentaires en répondant à quelques questions.",
     type: 'welcome',
-    nextQuestion: 'platform'
+    nextQuestion: 'region_selection'
   },
+  {
+  id: 'region_selection',
+  title: "Dans quelle région êtes-vous situé ?",
+  description: "Sélectionnez votre région pour trouver des plateformes adaptées à votre localisation.",
+  type: 'choice',
+  choices: [
+    { id: '1', label: 'Auvergne-Rhône-Alpes' },
+    { id: '2', label: 'Bourgogne-Franche-Comté' },
+    { id: '3', label: 'Bretagne' },
+    { id: '4', label: 'Centre-Val de Loire' },
+    { id: '5', label: 'Corse' },
+    { id: '6', label: 'Grand Est' },
+    { id: '7', label: 'Hauts-de-France' },
+    { id: '8', label: 'Île-de-France' },
+    { id: '9', label: 'Normandie' },
+    { id: '10', label: 'Nouvelle-Aquitaine' },
+    { id: '11', label: 'Occitanie' },
+    { id: '12', label: 'Pays de la Loire' },
+    { id: '13', label: 'Provence-Alpes-Côte d\'Azur' }
+  ],
+  filter: 'checkboxListeRegionsid_listeregions',
+  multiple: false,
+  nextQuestion: 'department_selection'
+},
+  
+{
+  id: 'department_selection',
+  title: "Dans quel département êtes-vous situé ?",
+  description: "Sélectionnez votre département pour affiner les résultats.",
+  type: 'choice',
+  getDepartmentChoices: (regionId) => {
+    // Dictionnaire des départements par région
+    const departmentsByRegion = {
+      '1': [ // Auvergne-Rhône-Alpes
+        { id: '01', label: 'Ain' },
+        { id: '03', label: 'Allier' },
+        { id: '07', label: 'Ardèche' },
+        { id: '15', label: 'Cantal' },
+        { id: '26', label: 'Drôme' },
+        { id: '38', label: 'Isère' },
+        { id: '42', label: 'Loire' },
+        { id: '43', label: 'Haute-Loire' },
+        { id: '63', label: 'Puy-de-Dôme' },
+        { id: '69', label: 'Rhône' },
+        { id: '73', label: 'Savoie' },
+        { id: '74', label: 'Haute-Savoie' }
+      ],
+      '2': [ // Bourgogne-Franche-Comté
+        { id: '21', label: 'Côte-d\'Or' },
+        { id: '25', label: 'Doubs' },
+        { id: '39', label: 'Jura' },
+        { id: '58', label: 'Nièvre' },
+        { id: '70', label: 'Haute-Saône' },
+        { id: '71', label: 'Saône-et-Loire' },
+        { id: '89', label: 'Yonne' },
+        { id: '90', label: 'Territoire de Belfort' }
+      ],
+      '3': [ // Bretagne
+        { id: '22', label: 'Côtes-d\'Armor' },
+        { id: '29', label: 'Finistère' },
+        { id: '35', label: 'Ille-et-Vilaine' },
+        { id: '56', label: 'Morbihan' }
+      ],
+      '4': [ // Centre-Val de Loire
+        { id: '18', label: 'Cher' },
+        { id: '28', label: 'Eure-et-Loir' },
+        { id: '36', label: 'Indre' },
+        { id: '37', label: 'Indre-et-Loire' },
+        { id: '41', label: 'Loir-et-Cher' },
+        { id: '45', label: 'Loiret' }
+      ],
+      '5': [ // Corse
+        { id: '2A', label: 'Corse-du-Sud' },
+        { id: '2B', label: 'Haute-Corse' }
+      ],
+      '6': [ // Grand Est
+        { id: '08', label: 'Ardennes' },
+        { id: '10', label: 'Aube' },
+        { id: '51', label: 'Marne' },
+        { id: '52', label: 'Haute-Marne' },
+        { id: '54', label: 'Meurthe-et-Moselle' },
+        { id: '55', label: 'Meuse' },
+        { id: '57', label: 'Moselle' },
+        { id: '67', label: 'Bas-Rhin' },
+        { id: '68', label: 'Haut-Rhin' },
+        { id: '88', label: 'Vosges' }
+      ],
+      '7': [ // Hauts-de-France
+        { id: '02', label: 'Aisne' },
+        { id: '59', label: 'Nord' },
+        { id: '60', label: 'Oise' },
+        { id: '62', label: 'Pas-de-Calais' },
+        { id: '80', label: 'Somme' }
+      ],
+      '8': [ // Île-de-France
+        { id: '75', label: 'Paris' },
+        { id: '77', label: 'Seine-et-Marne' },
+        { id: '78', label: 'Yvelines' },
+        { id: '91', label: 'Essonne' },
+        { id: '92', label: 'Hauts-de-Seine' },
+        { id: '93', label: 'Seine-Saint-Denis' },
+        { id: '94', label: 'Val-de-Marne' },
+        { id: '95', label: 'Val-d\'Oise' }
+      ],
+      '9': [ // Normandie
+        { id: '14', label: 'Calvados' },
+        { id: '27', label: 'Eure' },
+        { id: '50', label: 'Manche' },
+        { id: '61', label: 'Orne' },
+        { id: '76', label: 'Seine-Maritime' }
+      ],
+      '10': [ // Nouvelle-Aquitaine
+        { id: '16', label: 'Charente' },
+        { id: '17', label: 'Charente-Maritime' },
+        { id: '19', label: 'Corrèze' },
+        { id: '23', label: 'Creuse' },
+        { id: '24', label: 'Dordogne' },
+        { id: '33', label: 'Gironde' },
+        { id: '40', label: 'Landes' },
+        { id: '47', label: 'Lot-et-Garonne' },
+        { id: '64', label: 'Pyrénées-Atlantiques' },
+        { id: '79', label: 'Deux-Sèvres' },
+        { id: '86', label: 'Vienne' },
+        { id: '87', label: 'Haute-Vienne' }
+      ],
+      '11': [ // Occitanie
+        { id: '09', label: 'Ariège' },
+        { id: '11', label: 'Aude' },
+        { id: '12', label: 'Aveyron' },
+        { id: '30', label: 'Gard' },
+        { id: '31', label: 'Haute-Garonne' },
+        { id: '32', label: 'Gers' },
+        { id: '34', label: 'Hérault' },
+        { id: '46', label: 'Lot' },
+        { id: '48', label: 'Lozère' },
+        { id: '65', label: 'Hautes-Pyrénées' },
+        { id: '66', label: 'Pyrénées-Orientales' },
+        { id: '81', label: 'Tarn' },
+        { id: '82', label: 'Tarn-et-Garonne' }
+      ],
+      '12': [ // Pays de la Loire
+        { id: '44', label: 'Loire-Atlantique' },
+        { id: '49', label: 'Maine-et-Loire' },
+        { id: '53', label: 'Mayenne' },
+        { id: '72', label: 'Sarthe' },
+        { id: '85', label: 'Vendée' }
+      ],
+      '13': [ // Provence-Alpes-Côte d'Azur
+        { id: '04', label: 'Alpes-de-Haute-Provence' },
+        { id: '05', label: 'Hautes-Alpes' },
+        { id: '06', label: 'Alpes-Maritimes' },
+        { id: '13', label: 'Bouches-du-Rhône' },
+        { id: '83', label: 'Var' },
+        { id: '84', label: 'Vaucluse' }
+      ]
+    };
+    
+    return departmentsByRegion[regionId] || [];
+  },
+  filter: 'checkboxListeDepartementsid_listedepartements',
+  multiple: false,
+  nextQuestion: 'platform'
+},
 {
   id: 'platform',
   title: "Quel type d'outil recherchez-vous principalement ?",
@@ -310,7 +473,7 @@ function getYearFromNumber(number) {
   const baseYear = 2005;
   return number && !isNaN(number) ? baseYear + (parseInt(number) - 1) : "Non renseigné";
 }
-
+// Modification du composant Assistant pour gérer les départements dynamiques
 const Assistant = () => {
   // États
   const [currentQuestionId, setCurrentQuestionId] = useState('welcome');
@@ -323,6 +486,9 @@ const Assistant = () => {
   const [showAllResults, setShowAllResults] = useState(false);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [navigationHistory, setNavigationHistory] = useState([]);
+  
+  // Nouvel état pour les choix de départements dynamiques
+  const [departmentChoices, setDepartmentChoices] = useState([]);
 
   // Index des questions pour la navigation
   const questionIndex = questions.reduce((acc, q, idx) => {
@@ -347,6 +513,18 @@ const Assistant = () => {
       fetchData();
     }
   }, []);
+
+  // Mettre à jour les départements lorsque la région est sélectionnée
+  useEffect(() => {
+    if (currentQuestionId === 'department_selection' && answers['region_selection']) {
+      const regionId = answers['region_selection'];
+      const question = questions.find(q => q.id === 'department_selection');
+      if (question && question.getDepartmentChoices) {
+        const choices = question.getDepartmentChoices(regionId);
+        setDepartmentChoices(choices);
+      }
+    }
+  }, [currentQuestionId, answers]);
 
   // Fonction pour fetcher les données
   const fetchData = () => {
@@ -402,68 +580,280 @@ const Assistant = () => {
     }
   }, [currentQuestionId, answers, data]);
 
- // Gérer les choix de l'utilisateur
-const handleAnswer = (questionId, answer) => {
-  const question = questions.find(q => q.id === questionId);
-  
-  // Mettre à jour les réponses
-  setAnswers(prev => {
-    const newAnswers = { ...prev };
+  // Gérer les choix de l'utilisateur
+  const handleAnswer = (questionId, answer) => {
+    const question = questions.find(q => q.id === questionId);
     
-    if (question.multiple) {
-      // Pour les questions à choix multiples
-      if (!newAnswers[questionId]) {
-        newAnswers[questionId] = [];
+    // Mettre à jour les réponses
+    setAnswers(prev => {
+      const newAnswers = { ...prev };
+      
+      if (question.multiple) {
+        // Pour les questions à choix multiples
+        if (!newAnswers[questionId]) {
+          newAnswers[questionId] = [];
+        }
+        
+        const index = newAnswers[questionId].indexOf(answer);
+        if (index === -1) {
+          newAnswers[questionId] = [...newAnswers[questionId], answer];
+        } else {
+          newAnswers[questionId] = newAnswers[questionId].filter(a => a !== answer);
+        }
+      } else {
+        // Pour les questions à choix unique
+        newAnswers[questionId] = answer;
       }
       
-      const index = newAnswers[questionId].indexOf(answer);
-      if (index === -1) {
-        newAnswers[questionId] = [...newAnswers[questionId], answer];
+      return newAnswers;
+    });
+  };
+
+  // Navigation vers la question suivante
+  const goToNextQuestion = () => {
+    const currentQuestion = questions.find(q => q.id === currentQuestionId);
+    
+    // Si on est sur la question du profil et qu'aucun choix n'est fait, bloquer
+    if (currentQuestionId === 'user_info' && !answers[currentQuestionId]) {
+      // Simple alerte ou message visuel
+      alert("Veuillez sélectionner une option pour continuer");
+      return;
+    }
+    
+    if (currentQuestion && currentQuestion.nextQuestion) {
+      let nextQuestionId;
+      
+      // Vérifier si nextQuestion est une fonction (navigation conditionnelle)
+      if (typeof currentQuestion.nextQuestion === 'function') {
+        nextQuestionId = currentQuestion.nextQuestion(answers[currentQuestionId]);
       } else {
-        newAnswers[questionId] = newAnswers[questionId].filter(a => a !== answer);
+        // Navigation simple avec une chaîne
+        nextQuestionId = currentQuestion.nextQuestion;
       }
-    } else {
-      // Pour les questions à choix unique
-      newAnswers[questionId] = answer;
+      
+      // Si on passe à la page finale à partir de la page d'email, enregistrer les données
+      if (currentQuestionId === 'contact_info' && nextQuestionId === 'final') {
+        saveUserData();
+      }
+      
+      setCurrentQuestionId(nextQuestionId);
+    }
+  };
+
+  // Historique de navigation pour le retour en arrière
+  useEffect(() => {
+    // Si on change de question, mettre à jour l'historique
+    // Mais ne pas stocker la page d'accueil dans l'historique
+    if (currentQuestionId !== 'welcome') {
+      setNavigationHistory(prev => {
+        // Éviter les doublons consécutifs
+        if (prev.length > 0 && prev[prev.length - 1] === currentQuestionId) {
+          return prev;
+        }
+        return [...prev, currentQuestionId];
+      });
+    }
+  }, [currentQuestionId]);
+
+  // Navigation vers la question précédente
+  const goToPreviousQuestion = () => {
+    // Cas spécial pour les questions de localisation
+    if (currentQuestionId === 'region_selection') {
+      setCurrentQuestionId('location_scope');
+      return;
     }
     
-    return newAnswers;
-  });
-};
+    if (currentQuestionId === 'department_selection') {
+      setCurrentQuestionId('region_selection');
+      return;
+    }
+    
+    // Cas spécial pour la question platform si on vient de location_scope
+    if (currentQuestionId === 'platform' && answers['location_scope'] === '1') {
+      setCurrentQuestionId('location_scope');
+      return;
+    }
+    
+    // Cas spécial: quand on est à la question "clients" après avoir répondu "non" à multiproducer
+    if (currentQuestionId === 'clients' && answers['multiproducer'] === 'no') {
+      setCurrentQuestionId('multiproducer');
+      return;
+    }
+    
+    // Cas spécial: quand on est dans "multiproducer_services", on retourne à "multiproducer"
+    if (currentQuestionId === 'multiproducer_services') {
+      setCurrentQuestionId('multiproducer');
+      return;
+    }
+    
+    // Comportement normal - trouver l'index de la question actuelle
+    const currentIndex = questionIndex[currentQuestionId];
+    if (currentIndex > 0) {
+      // Aller à la question précédente dans l'ordre du tableau
+      setCurrentQuestionId(questions[currentIndex - 1].id);
+    }
+  };
 
-// Navigation vers la question suivante
-const goToNextQuestion = () => {
+  // Recommencer le questionnaire
+  const restart = () => {
+    setAnswers({});
+    setCurrentQuestionId('welcome');
+    setSearchQuery('');
+    setShowAllResults(false);
+  };
+
+  // Recherche dans les résultats
+  const filteredResults = searchQuery 
+    ? results.filter(r => 
+        r.item.bf_titre?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.item.bf_descriptiongenerale?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : results;
+
+  // Déterminer quels résultats afficher
+  const displayResults = showAllResults ? filteredResults : filteredResults.slice(0, 5);
+  
+  // Récupérer la question actuelle
   const currentQuestion = questions.find(q => q.id === currentQuestionId);
-  
-  // Si on est sur la question du profil et qu'aucun choix n'est fait, bloquer
-  if (currentQuestionId === 'user_info' && !answers[currentQuestionId]) {
-    // Simple alerte ou message visuel
-    alert("Veuillez sélectionner une option pour continuer");
-    return;
-  }
-  
-  if (currentQuestion && currentQuestion.nextQuestion) {
-    let nextQuestionId;
-    
-    // Vérifier si nextQuestion est une fonction (navigation conditionnelle)
-    if (typeof currentQuestion.nextQuestion === 'function') {
-      nextQuestionId = currentQuestion.nextQuestion(answers[currentQuestionId]);
-    } else {
-      // Navigation simple avec une chaîne
-      nextQuestionId = currentQuestion.nextQuestion;
-    }
-    
-    // Si on passe à la page finale à partir de la page d'email, enregistrer les données
-    if (currentQuestionId === 'contact_info' && nextQuestionId === 'final') {
-      saveUserData();
-    }
-    
-    setCurrentQuestionId(nextQuestionId);
-  }
-};
 
-  // Fonction pour enregistrer les données utilisateur
-  const saveUserData = async () => {
+  // Fonction pour basculer l'affichage d'une description
+  const toggleDescription = (index, event) => {
+    // Empêcher la propagation de l'événement pour éviter d'ouvrir la carte complète
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
+  // Fonction pour calculer les résultats
+  const calculateResults = async () => {
+    if (data.length === 0) {
+      setResults([]);
+      return;
+    }
+
+    // Calculer un score pour chaque outil basé sur les réponses
+    const scoredData = data.map(item => {
+      let score = 0;
+      let maxScore = 0;
+      let locationMatch = false;
+      
+      // Traitement spécial pour la localisation
+      if (answers['location_scope']) {
+        const locationScope = answers['location_scope'];
+        
+        if (locationScope === '1') { // France entière
+          // Les plateformes France entière sont toujours pertinentes
+          if (item['listeListeOuinonid_echellelocalisation'] === '1') {
+            score += 5; // Bonus pour les plateformes nationales
+            locationMatch = true;
+          }
+        } else if (locationScope === '2') { // Restriction géographique
+          // Vérifier les correspondances selon les choix de région et département
+          const selectedRegion = answers['region_selection'];
+          const selectedDepartment = answers['department_selection'];
+          
+          // Plateformes France entière sont toujours incluses
+          if (item['listeListeOuinonid_echellelocalisation'] === '1') {
+            score += 2; // Mais avec un score plus faible que les plateformes locales
+            locationMatch = true;
+          }
+          
+          // Correspondance de région
+          if (selectedRegion) {
+            const itemRegions = (item['checkboxListeRegionsid_listeregions'] || '').split(',').map(s => s.trim());
+            if (itemRegions.includes(selectedRegion)) {
+              score += 5; // Bonus important pour les plateformes de la région
+              locationMatch = true;
+            }
+          }
+          
+          // Correspondance de département
+          if (selectedDepartment) {
+            const itemDepartments = (item['checkboxListeDepartementsid_listedepartements'] || '').split(',').map(s => s.trim());
+            if (itemDepartments.includes(selectedDepartment)) {
+              score += 10; // Bonus maximal pour les plateformes du département
+              locationMatch = true;
+            }
+          }
+        }
+        
+        // Si aucune correspondance de localisation, pénalité forte
+        if (!locationMatch) {
+          score -= 20; // Pénalité pour non-correspondance géographique
+        }
+        
+        // Ajouter au score maximal
+        maxScore += 10;
+      }
+      
+      // Parcourir toutes les autres réponses
+      Object.entries(answers).forEach(([questionId, answer]) => {
+        // Ignorer les questions de localisation déjà traitées
+        if (['location_scope', 'region_selection', 'department_selection'].includes(questionId)) {
+          return;
+        }
+        
+        const question = questions.find(q => q.id === questionId);
+        if (!question || !question.filter) return;
+        
+        // Différentes logiques selon le type de filtre
+        if (question.filter === 'listeListeTypeplateforme') {
+          // Filtrage pour le type de plateforme (choix unique)
+          if (answer && item[question.filter] === answer) {
+            score += 10; // Poids plus élevé pour ce critère essentiel
+          }
+          if (answer) maxScore += 10;
+        } 
+        else if (question.filter === 'ouinonFields') {
+          // Gestion des champs Oui/Non
+          if (Array.isArray(answer) && answer.length > 0) {
+            answer.forEach(ans => {
+              const fieldName = question.filterMapping[ans];
+              if (fieldName && item[fieldName] === "2") { // "2" = Oui
+                score += 1;
+              }
+              maxScore += 1;
+            });
+          }
+        }
+        else {
+          // Filtrage pour les autres critères (choix multiples)
+          if (Array.isArray(answer) && answer.length > 0) {
+            const itemValues = (item[question.filter] || '').split(',').map(s => s.trim());
+            
+            // Compter combien de valeurs sélectionnées sont présentes dans l'item
+            const matchCount = answer.filter(ans => itemValues.includes(ans)).length;
+            score += matchCount;
+            maxScore += answer.length;
+          }
+        }
+      });
+      
+      // Calculer le pourcentage de correspondance
+      const matchPercentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
+      
+      return {
+        item,
+        score,
+        maxScore,
+        matchPercentage,
+        locationMatch // Ajouter cette info pour l'affichage
+      };
+    });
+    
+    // Trier par pourcentage de correspondance décroissant
+    const sortedResults = scoredData
+      .sort((a, b) => b.matchPercentage - a.matchPercentage)
+      .filter(result => result.matchPercentage > 0); // Filtre les résultats avec un score positif
+    
+    setResults(sortedResults);
+    
+    // Enregistrer les résultats dans Firebase
     try {
       // Générer un ID de session unique si pas déjà existant
       const sessionId = localStorage.getItem('assistant_session_id') || 
@@ -473,18 +863,28 @@ const goToNextQuestion = () => {
         localStorage.setItem('assistant_session_id', sessionId);
       }
       
-      // Enregistrer les informations de l'utilisateur
-      await addDoc(collection(db, "user_info"), {
+      // Enregistrer les critères de recherche
+      await addDoc(collection(db, "search_criteria"), {
         sessionId: sessionId,
-        userProfile: answers['user_info'],
-        email: answers['email'] || null,
-        timestamp: new Date(),
-        userAgent: navigator.userAgent
+        criteria: answers,
+        timestamp: new Date()
       });
       
-      console.log("Informations utilisateur enregistrées avec succès");
+      // Enregistrer les résultats affichés
+      await addDoc(collection(db, "search_results"), {
+        sessionId: sessionId,
+        results: sortedResults.slice(0, 10).map((r, idx) => ({
+          platformId: r.item.id_fiche || '',
+          platformName: r.item.bf_titre || '',
+          position: idx + 1,
+          matchPercentage: r.matchPercentage
+        })),
+        timestamp: new Date()
+      });
+      
+      console.log("Résultats enregistrés avec succès");
     } catch (error) {
-      console.error("Erreur lors de l'enregistrement des informations utilisateur:", error);
+      console.error("Erreur lors de l'enregistrement des résultats:", error);
     }
   };
 
@@ -508,7 +908,6 @@ const goToNextQuestion = () => {
       console.error("Erreur lors de l'enregistrement du clic:", error);
     }
   };
-
   // Fonction pour calculer les résultats
   const calculateResults = async () => {
     if (data.length === 0) {
@@ -749,88 +1148,124 @@ const goToNextQuestion = () => {
               </div>
             )}
             
-           {/* Questions à choix */}
-            {currentQuestion.type === 'choice' && (
-              <div>
-                <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
-                <p className="mb-6 text-gray-600 dark:text-gray-300 italic">{currentQuestion.description}</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  {/* Options de réponses principales */}
-                  {currentQuestion.choices.map(choice => {
-                    const isSelected = currentQuestion.multiple 
-                      ? answers[currentQuestionId]?.includes(choice.id)
-                      : answers[currentQuestionId] === choice.id;
-                      
-                    return (
-                      <div 
-                        key={choice.id}
-                        onClick={() => handleAnswer(currentQuestionId, choice.id)}
-                        className={`border p-4 rounded-lg cursor-pointer transition-all ${
-                          isSelected 
-                            ? 'border-green-500 bg-green-50 dark:bg-green-900 dark:border-green-600 shadow-md' 
-                            : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        <div className="flex items-start">
-                          {/* Icône du choix si disponible */}
-                          {choice.icon && (
-                            <span className="text-2xl mr-3">{choice.icon}</span>
-                          )}
-                          
-                          <div className="flex-grow">
-                            <h3 className="font-semibold text-lg flex items-center">
-                              {choice.label}
-                              {isSelected && (
-                                <CheckCircle size={18} className="ml-2 text-green-500" />
-                              )}
-                            </h3>
-                            {choice.description && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{choice.description}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Option "Je ne sais pas" - maintenant dans la même grille */}
-                  <div 
-                    onClick={() => goToNextQuestion()}
-                    className="border p-4 rounded-lg cursor-pointer transition-all border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 bg-gray-50 dark:bg-gray-800"
-                  >
-                    <div className="flex items-start">
-                      <div className="flex-grow">
-                        <h3 className="font-semibold text-lg text-gray-500 dark:text-gray-400">Je ne sais pas</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Je ne suis pas sûr ou cela m'est égal</p>
-                      </div>
-                    </div>
+{/* Questions à choix */}
+{currentQuestion.type === 'choice' && (
+  <div>
+    <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
+    <p className="mb-6 text-gray-600 dark:text-gray-300 italic">{currentQuestion.description}</p>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      {/* Options de réponses avec gestion des choix dynamiques pour les départements */}
+      {currentQuestionId === 'department_selection' 
+        ? departmentChoices.map(choice => {
+            const isSelected = currentQuestion.multiple 
+              ? answers[currentQuestionId]?.includes(choice.id)
+              : answers[currentQuestionId] === choice.id;
+              
+            return (
+              <div 
+                key={choice.id}
+                onClick={() => handleAnswer(currentQuestionId, choice.id)}
+                className={`border p-4 rounded-lg cursor-pointer transition-all ${
+                  isSelected 
+                    ? 'border-green-500 bg-green-50 dark:bg-green-900 dark:border-green-600 shadow-md' 
+                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <div className="flex items-start">
+                  {choice.icon && (
+                    <span className="text-2xl mr-3">{choice.icon}</span>
+                  )}
+                  
+                  <div className="flex-grow">
+                    <h3 className="font-semibold text-lg flex items-center">
+                      {choice.label}
+                      {isSelected && (
+                        <CheckCircle size={18} className="ml-2 text-green-500" />
+                      )}
+                    </h3>
+                    {choice.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{choice.description}</p>
+                    )}
                   </div>
                 </div>
-                
-                {/* Message pour rassurer l'utilisateur */}
-                <p className="text-sm text-gray-500 dark:text-gray-400 italic mt-8 mb-4 text-center">
-                  Vous pouvez passer cette question si vous n'avez pas de préférence particulière.
-                </p>
-                
-                {/* Boutons de navigation */}
-                <div className="flex justify-between mt-6">
-                  <button 
-                    onClick={goToPreviousQuestion}
-                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center"
-                  >
-                    <ArrowLeft size={18} className="mr-2" /> Précédent
-                  </button>
+              </div>
+            );
+          })
+        : currentQuestion.choices.map(choice => {
+            const isSelected = currentQuestion.multiple 
+              ? answers[currentQuestionId]?.includes(choice.id)
+              : answers[currentQuestionId] === choice.id;
+              
+            return (
+              <div 
+                key={choice.id}
+                onClick={() => handleAnswer(currentQuestionId, choice.id)}
+                className={`border p-4 rounded-lg cursor-pointer transition-all ${
+                  isSelected 
+                    ? 'border-green-500 bg-green-50 dark:bg-green-900 dark:border-green-600 shadow-md' 
+                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <div className="flex items-start">
+                  {choice.icon && (
+                    <span className="text-2xl mr-3">{choice.icon}</span>
+                  )}
                   
-                  <button 
-                    onClick={goToNextQuestion}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
-                  >
-                    {currentQuestion.nextQuestion === 'final' ? 'Voir les résultats' : 'Suivant'} <ArrowRight size={18} className="ml-2" />
-                  </button>
+                  <div className="flex-grow">
+                    <h3 className="font-semibold text-lg flex items-center">
+                      {choice.label}
+                      {isSelected && (
+                        <CheckCircle size={18} className="ml-2 text-green-500" />
+                      )}
+                    </h3>
+                    {choice.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{choice.description}</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            )}
+            );
+          })
+      }
+
+      {/* Option "Je ne sais pas" - maintenant dans la même grille */}
+      <div 
+        onClick={() => goToNextQuestion()}
+        className="border p-4 rounded-lg cursor-pointer transition-all border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 bg-gray-50 dark:bg-gray-800"
+      >
+        <div className="flex items-start">
+          <div className="flex-grow">
+            <h3 className="font-semibold text-lg text-gray-500 dark:text-gray-400">Je ne sais pas</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Je ne suis pas sûr ou cela m'est égal</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {/* Message pour rassurer l'utilisateur */}
+    <p className="text-sm text-gray-500 dark:text-gray-400 italic mt-8 mb-4 text-center">
+      Vous pouvez passer cette question si vous n'avez pas de préférence particulière.
+    </p>
+    
+    {/* Boutons de navigation */}
+    <div className="flex justify-between mt-6">
+      <button 
+        onClick={goToPreviousQuestion}
+        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center"
+      >
+        <ArrowLeft size={18} className="mr-2" /> Précédent
+      </button>
+      
+      <button 
+        onClick={goToNextQuestion}
+        className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
+      >
+        {currentQuestion.nextQuestion === 'final' ? 'Voir les résultats' : 'Suivant'} <ArrowRight size={18} className="ml-2" />
+      </button>
+    </div>
+  </div>
+)}
             
             {/* Question pour collecter l'email */}
             {currentQuestion.type === 'email' && (
