@@ -14,20 +14,61 @@ const questions = [
     type: 'welcome',
     nextQuestion: 'platform'
   },
+{
+  id: 'platform',
+  title: "Quel type d'outil recherchez-vous principalement ?",
+  description: "Choisissez le type d'outil qui correspond le mieux à vos besoins.",
+  type: 'choice',
+  choices: [
+    { id: '1', label: 'Générateur de Boutique', description: "Pour créer votre propre boutique en ligne" },
+    { id: '2', label: 'Place de Marché', description: "Pour vendre sur une plateforme qui rassemble plusieurs vendeurs" },
+    { id: '3', label: 'Outil de Gestion', description: "Pour gérer vos commandes et votre logistique" }
+  ],
+  filter: 'listeListeTypeplateforme',
+  multiple: false,
+  nextQuestion: 'multiproducer'
+},
   {
-    id: 'platform',
-    title: "Quel type d'outil recherchez-vous principalement ?",
-    description: "Choisissez le type d'outil qui correspond le mieux à vos besoins.",
-    type: 'choice',
-    choices: [
-      { id: '1', label: 'Générateur de Boutique', description: "Pour créer votre propre boutique en ligne" },
-      { id: '2', label: 'Place de Marché', description: "Pour vendre sur une plateforme qui rassemble plusieurs vendeurs" },
-      { id: '3', label: 'Outil de Gestion', description: "Pour gérer vos commandes et votre logistique" }
-    ],
-    filter: 'listeListeTypeplateforme',
-    multiple: false,
-    nextQuestion: 'clients'
+  id: 'multiproducer',
+  title: "Souhaitez-vous vendre seulement vos propres produits ou les produits de plusieurs producteurs ?",
+  description: "Cette information nous permettra de vous proposer des outils adaptés à votre mode de fonctionnement.",
+  type: 'choice',
+  choices: [
+    { id: 'yes', label: 'Oui, je souhaite vendre les produits de plusieurs producteurs', description: "Je veux proposer une offre diversifiée de plusieurs producteurs" },
+    { id: 'no', label: 'Non, je souhaite uniquement vendre mes propres produits', description: "Je souhaite uniquement commercialiser ma production" },
+    { id: 'idk', label: 'Je ne sais pas', description: "Je n'ai pas encore décidé" }
+  ],
+  filter: 'multiproducer',
+  multiple: false,
+  nextQuestion: (answer) => {
+    if (answer === 'yes') {
+      return 'multiproducer_services';
+    } else {
+      return 'clients';
+    }
+  }
+},
+{
+  id: 'multiproducer_services',
+  title: "Quels services de vente à plusieurs recherchez-vous ?",
+  description: "Sélectionnez les fonctionnalités qui vous aideront à gérer la vente de produits de plusieurs producteurs.",
+  type: 'choice',
+  choices: [
+    { id: 'plusieurscomptes', label: 'Accès du compte à plusieurs', description: "Permettre à chaque producteur d'accéder à son espace" },
+    { id: 'commissionpersonalisee', label: 'Commission personnalisée par producteur', description: "Définir des commissions différentes selon les producteurs" },
+    { id: 'repartitionpaiements', label: 'Répartition des paiements', description: "Distribuer automatiquement les paiements entre producteurs" },
+    { id: 'datelimite', label: 'Paramétrage de dates limites par producteur', description: "Dates de commande adaptables à chaque producteur" }
+  ],
+  filter: 'ouinonFields',
+  filterMapping: {
+    'plusieurscomptes': 'listeListeOuinonid_plusieurscomptes',
+    'commissionpersonalisee': 'listeListeOuinonid_commissionpersonalisee',
+    'repartitionpaiements': 'listeListeOuinonid_repartitionpaiements',
+    'datelimite': 'listeListeOuinonid_datelimite'
   },
+  multiple: true,
+  nextQuestion: 'clients'
+},
   {
     id: 'clients',
     title: "À quels types d'acheteurs souhaitez-vous vendre ?",
