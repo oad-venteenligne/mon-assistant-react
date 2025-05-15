@@ -153,29 +153,36 @@ const questions = [
     multiple: true,
     nextQuestion: 'communication'
   },
-  {
-    id: 'communication',
-    title: "Quelles fonctionnalités de communication recherchez-vous ?",
-    description: "Sélectionnez les options pour communiquer avec vos clients.",
-    type: 'choice',
-    choices: [
-      { id: 'pagepersonnalise', label: 'Personnalisation graphique', description: "Adapter l'apparence à votre marque" },
-      { id: 'url', label: 'URL personnalisée', description: "Avoir votre propre nom de domaine" },
-      { id: 'seo', label: 'Support SEO', description: "Optimisation pour les moteurs de recherche" },
-      { id: 'socialnetworks', label: 'Intégration réseaux sociaux', description: "Connexion avec vos comptes sociaux" },
-      { id: 'emailing', label: 'Emailing et notifications', description: "Communication automatisée avec vos clients" }
-    ],
-    filter: 'ouinonFields',
-    filterMapping: {
-      'pagepersonnalise': 'listeListeOuinonid_pagepersonnalise',
-      'url': 'listeListeOuinonid_url',
-      'seo': 'listeListeOuinonid_seo',
-      'socialnetworks': 'listeListeOuinonid_socialnetworks',
-      'emailing': 'listeListeOuinonid_emailing'
-    },
-    multiple: true,
-    nextQuestion: 'user_info'  // Modifié de 'final' à 'user_info'
+  
+{
+  id: 'communication',
+  title: "Quelles fonctionnalités de communication recherchez-vous ?",
+  description: "Sélectionnez les options pour communiquer avec vos clients.",
+  type: 'choice',
+  choices: [
+    { id: 'pagepersonnalise', label: 'Personnalisation graphique', description: "Adapter l'apparence à votre marque" },
+    { id: 'url', label: 'URL personnalisée', description: "Avoir votre propre nom de domaine" },
+    { id: 'seo', label: 'Support SEO', description: "Optimisation pour les moteurs de recherche" },
+    { id: 'socialnetworks', label: 'Intégration réseaux sociaux', description: "Connexion avec vos comptes sociaux" },
+    { id: 'emailing', label: 'Emailing et notifications', description: "Communication automatisée avec vos clients" },
+    { id: 'messagerie', label: 'Messagerie Instantanée', description: "Échanger en direct avec vos clients" },
+    { id: 'com', label: 'Modèles de PLV ou supports de communication', description: "Matériel promotionnel pour le point de vente" },
+    { id: 'carte', label: 'Carte en ligne publique', description: "Référencement de l'ensemble des producteurs" }
+  ],
+  filter: 'ouinonFields',
+  filterMapping: {
+    'pagepersonnalise': 'listeListeOuinonid_pagepersonnalise',
+    'url': 'listeListeOuinonid_url',
+    'seo': 'listeListeOuinonid_seo',
+    'socialnetworks': 'listeListeOuinonid_socialnetworks',
+    'emailing': 'listeListeOuinonid_emailing',
+    'messagerie': 'listeListeOuinonid_messagerie',
+    'com': 'listeListeOuinonid_com',
+    'carte': 'listeListeOuinonid_carte'
   },
+  multiple: true,
+  nextQuestion: 'user_info'
+},
   // Nouvelles questions pour le mini-questionnaire
   {
     id: 'user_info',
