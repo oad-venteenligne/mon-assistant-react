@@ -800,59 +800,58 @@ const calculateResults = async () => {
   }
 
   // Calculer un score pour chaque outil basé sur les réponses
-  const scoredData = data.map(item => {
-    let score = 0;
-    let maxScore = 0;
-    let locationMatch = false;
-    
-    // Traitement spécial pour la localisation
-    if (answers['location_scope']) {
-      const locationScope = answers['location_scope'];
-      
-      if (locationScope === '1') { // France entière
-        // Les plateformes France entière sont toujours pertinentes
-        if (item['listeListeOuinonid_echellelocalisation'] === '1') {
-          score += 5; // Bonus pour les plateformes nationales
-          locationMatch = true;
-        }
-      } else if (locationScope === '2') { // Restriction géographique
-        // Vérifier les correspondances selon les choix de région et département
-        const selectedRegion = answers['region_selection'];
-        const selectedDepartment = answers['department_selection'];
-        
-        // Plateformes France entière sont toujours incluses
-        if (item['listeListeOuinonid_echellelocalisation'] === '1') {
-          score += 2; // Mais avec un score plus faible que les plateformes locales
-          locationMatch = true;
-        }
-        
-        // Correspondance de région
-        if (selectedRegion) {
-          const itemRegions = (item['checkboxListeRegionsid_listeregions'] || '').split(',').map(s => s.trim());
-          if (itemRegions.includes(selectedRegion)) {
-            score += 5; // Bonus important pour les plateformes de la région
-            locationMatch = true;
-          }
-        }
-        
-        // Correspondance de département
-        if (selectedDepartment) {
-          const itemDepartments = (item['checkboxListeDepartementsid_listedepartements'] || '').split(',').map(s => s.trim());
-          if (itemDepartments.includes(selectedDepartment)) {
-            score += 10; // Bonus maximal pour les plateformes du département
-            locationMatch = true;
-          }
-        }
-      }
-      
-      // Si aucune correspondance de localisation, pénalité forte
-      if (!locationMatch) {
-        score -= 20; // Pénalité pour non-correspondance géographique
-      }
-      
-      // Ajouter au score maximal
-      maxScore += 10;
+  // Première étape : filtrer les plateformes selon le critère de localisation
+  const filteredData = data.filter(item => {
+    // Si l'utilisateur n'a pas spécifié de préférence de localisation, inclure toutes les plateformes
+    if (!answers['location_scope']) {
+      return true;
     }
+    
+    const locationScope = answers['location_scope'];
+    
+    // Si l'utilisateur a choisi France entière, garder toutes les plateformes
+    if (locationScope === '1') {
+      return true;
+    }
+    
+    // Si l'utilisateur a choisi une restriction géographique
+    if (locationScope === '2') {
+      const selectedRegion = answers['region_selection'];
+      const selectedDepartment = answers['department_selection'];
+      
+      // Les plateformes France entière sont toujours disponibles
+      if (item['listeListeOuinonid_echellelocalisation'] === '1') {
+        return true;
+      }
+      
+      // Vérifier correspondance de région
+      if (selectedRegion) {
+        const itemRegions = (item['checkboxListeRegionsid_listeregions'] || '').split(',').map(s => s.trim());
+        if (itemRegions.includes(selectedRegion)) {
+          return true;
+        }
+      }
+      
+      // Vérifier correspondance de département
+      if (selectedDepartment) {
+        const itemDepartments = (item['checkboxListeDepartementsid_listedepartements'] || '').split(',').map(s => s.trim());
+        if (itemDepartments.includes(selectedDepartment)) {
+          return true;
+        }
+      }
+      
+      // Si aucune correspondance géographique, exclure la plateforme
+      return false;
+    }
+    
+    return true;
+  });
+  
+  // Deuxième étape : calculer le score pour les plateformes qui ont passé le filtre de localisation
+  const scoredData = filteredData.map(item => {
+    let matchedCriteria = 0;
+    let totalCriteria = 0;
+    let locationMatch = true; // Par défaut, toutes les plateformes ici ont déjà satisfait le critère de localisation
     
     // Parcourir toutes les autres réponses
     Object.entries(answers).forEach(([questionId, answer]) => {
@@ -867,20 +866,20 @@ const calculateResults = async () => {
       // Différentes logiques selon le type de filtre
       if (question.filter === 'listeListeTypeplateforme') {
         // Filtrage pour le type de plateforme (choix unique)
+        totalCriteria++;
         if (answer && item[question.filter] === answer) {
-          score += 10; // Poids plus élevé pour ce critère essentiel
+          matchedCriteria++;
         }
-        if (answer) maxScore += 10;
       } 
       else if (question.filter === 'ouinonFields') {
         // Gestion des champs Oui/Non
         if (Array.isArray(answer) && answer.length > 0) {
           answer.forEach(ans => {
             const fieldName = question.filterMapping[ans];
+            totalCriteria++;
             if (fieldName && item[fieldName] === "2") { // "2" = Oui
-              score += 1;
+              matchedCriteria++;
             }
-            maxScore += 1;
           });
         }
       }
@@ -889,21 +888,24 @@ const calculateResults = async () => {
         if (Array.isArray(answer) && answer.length > 0) {
           const itemValues = (item[question.filter] || '').split(',').map(s => s.trim());
           
-          // Compter combien de valeurs sélectionnées sont présentes dans l'item
-          const matchCount = answer.filter(ans => itemValues.includes(ans)).length;
-          score += matchCount;
-          maxScore += answer.length;
+          // Compter chaque valeur sélectionnée comme un critère distinct
+          answer.forEach(ans => {
+            totalCriteria++;
+            if (itemValues.includes(ans)) {
+              matchedCriteria++;
+            }
+          });
         }
       }
     });
     
     // Calculer le pourcentage de correspondance
-    const matchPercentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
+    const matchPercentage = totalCriteria > 0 ? Math.round((matchedCriteria / totalCriteria) * 100) : 0;
     
     return {
       item,
-      score,
-      maxScore,
+      matchedCriteria,
+      totalCriteria,
       matchPercentage,
       locationMatch // Ajouter cette info pour l'affichage
     };
@@ -911,8 +913,7 @@ const calculateResults = async () => {
   
   // Trier par pourcentage de correspondance décroissant
   const sortedResults = scoredData
-    .sort((a, b) => b.matchPercentage - a.matchPercentage)
-    .filter(result => result.matchPercentage > 0); // Filtre les résultats avec un score positif
+    .sort((a, b) => b.matchPercentage - a.matchPercentage);
   
   setResults(sortedResults);
   
@@ -941,7 +942,7 @@ const calculateResults = async () => {
         platformName: r.item.bf_titre || '',
         position: idx + 1,
         matchPercentage: r.matchPercentage,
-        locationMatch: r.locationMatch // Ajouter l'information de correspondance géographique
+        locationMatch: r.locationMatch
       })),
       timestamp: new Date()
     });
