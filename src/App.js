@@ -128,7 +128,7 @@ const questions = [
     multiple: true,
     nextQuestion: 'management'
   },
-  {
+   {
     id: 'management',
     title: "Quelles fonctionnalités de gestion vous sont nécessaires ?",
     description: "Sélectionnez les outils qui vous aideront à gérer votre activité.",
@@ -138,7 +138,8 @@ const questions = [
       { id: 'bonslivraison', label: 'Bons de commande/livraison', description: "Documents de suivi des commandes" },
       { id: 'reduc', label: 'Offres et réductions', description: "Création de promotions" },
       { id: 'bdd', label: 'Extraction de données', description: "Export des données clients et ventes" },
-      { id: 'notation', label: 'Notation par les clients', description: "Système d'avis et évaluations" }
+      { id: 'notation', label: 'Notation par les clients', description: "Système d'avis et évaluations" },
+      { id: 'contractualisation', label: 'Fonctionnalités de contractualisation', description: "Gestion des contrats entre producteurs et acheteurs" }
     ],
     filter: 'ouinonFields',
     filterMapping: {
@@ -146,7 +147,8 @@ const questions = [
       'bonslivraison': 'listeListeOuinonid_bonslivraison',
       'reduc': 'listeListeOuinonid_reduc',
       'bdd': 'listeListeOuinonid_bdd',
-      'notation': 'listeListeOuinonid_notation'
+      'notation': 'listeListeOuinonid_notation',
+      'contractualisation': 'listeListeOuinonid_contractualisation'
     },
     multiple: true,
     nextQuestion: 'communication'
