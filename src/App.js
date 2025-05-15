@@ -792,165 +792,165 @@ const Assistant = () => {
     }
   };
 
-  // Fonction pour calculer les résultats
-  const calculateResults = async () => {
-    if (data.length === 0) {
-      setResults([]);
-      return;
-    }
+// Correction des erreurs dans la fonction calculateResults
+const calculateResults = async () => {
+  if (data.length === 0) {
+    setResults([]);
+    return;
+  }
 
-    // Calculer un score pour chaque outil basé sur les réponses
-    const scoredData = data.map(item => {
-      let score = 0;
-      let maxScore = 0;
-      let locationMatch = false;
+  // Calculer un score pour chaque outil basé sur les réponses
+  const scoredData = data.map(item => {
+    let score = 0;
+    let maxScore = 0;
+    let locationMatch = false;
+    
+    // Traitement spécial pour la localisation
+    if (answers['location_scope']) {
+      const locationScope = answers['location_scope'];
       
-      // Traitement spécial pour la localisation
-      if (answers['location_scope']) {
-        const locationScope = answers['location_scope'];
+      if (locationScope === '1') { // France entière
+        // Les plateformes France entière sont toujours pertinentes
+        if (item['listeListeOuinonid_echellelocalisation'] === '1') {
+          score += 5; // Bonus pour les plateformes nationales
+          locationMatch = true;
+        }
+      } else if (locationScope === '2') { // Restriction géographique
+        // Vérifier les correspondances selon les choix de région et département
+        const selectedRegion = answers['region_selection'];
+        const selectedDepartment = answers['department_selection'];
         
-        if (locationScope === '1') { // France entière
-          // Les plateformes France entière sont toujours pertinentes
-          if (item['listeListeOuinonid_echellelocalisation'] === '1') {
-            score += 5; // Bonus pour les plateformes nationales
+        // Plateformes France entière sont toujours incluses
+        if (item['listeListeOuinonid_echellelocalisation'] === '1') {
+          score += 2; // Mais avec un score plus faible que les plateformes locales
+          locationMatch = true;
+        }
+        
+        // Correspondance de région
+        if (selectedRegion) {
+          const itemRegions = (item['checkboxListeRegionsid_listeregions'] || '').split(',').map(s => s.trim());
+          if (itemRegions.includes(selectedRegion)) {
+            score += 5; // Bonus important pour les plateformes de la région
             locationMatch = true;
-          }
-        } else if (locationScope === '2') { // Restriction géographique
-          // Vérifier les correspondances selon les choix de région et département
-          const selectedRegion = answers['region_selection'];
-          const selectedDepartment = answers['department_selection'];
-          
-          // Plateformes France entière sont toujours incluses
-          if (item['listeListeOuinonid_echellelocalisation'] === '1') {
-            score += 2; // Mais avec un score plus faible que les plateformes locales
-            locationMatch = true;
-          }
-          
-          // Correspondance de région
-          if (selectedRegion) {
-            const itemRegions = (item['checkboxListeRegionsid_listeregions'] || '').split(',').map(s => s.trim());
-            if (itemRegions.includes(selectedRegion)) {
-              score += 5; // Bonus important pour les plateformes de la région
-              locationMatch = true;
-            }
-          }
-          
-          // Correspondance de département
-          if (selectedDepartment) {
-            const itemDepartments = (item['checkboxListeDepartementsid_listedepartements'] || '').split(',').map(s => s.trim());
-            if (itemDepartments.includes(selectedDepartment)) {
-              score += 10; // Bonus maximal pour les plateformes du département
-              locationMatch = true;
-            }
           }
         }
         
-        // Si aucune correspondance de localisation, pénalité forte
-        if (!locationMatch) {
-          score -= 20; // Pénalité pour non-correspondance géographique
+        // Correspondance de département
+        if (selectedDepartment) {
+          const itemDepartments = (item['checkboxListeDepartementsid_listedepartements'] || '').split(',').map(s => s.trim());
+          if (itemDepartments.includes(selectedDepartment)) {
+            score += 10; // Bonus maximal pour les plateformes du département
+            locationMatch = true;
+          }
         }
-        
-        // Ajouter au score maximal
-        maxScore += 10;
       }
       
-      // Parcourir toutes les autres réponses
-      Object.entries(answers).forEach(([questionId, answer]) => {
-        // Ignorer les questions de localisation déjà traitées
-        if (['location_scope', 'region_selection', 'department_selection'].includes(questionId)) {
-          return;
-        }
-        
-        const question = questions.find(q => q.id === questionId);
-        if (!question || !question.filter) return;
-        
-        // Différentes logiques selon le type de filtre
-        if (question.filter === 'listeListeTypeplateforme') {
-          // Filtrage pour le type de plateforme (choix unique)
-          if (answer && item[question.filter] === answer) {
-            score += 10; // Poids plus élevé pour ce critère essentiel
-          }
-          if (answer) maxScore += 10;
-        } 
-        else if (question.filter === 'ouinonFields') {
-          // Gestion des champs Oui/Non
-          if (Array.isArray(answer) && answer.length > 0) {
-            answer.forEach(ans => {
-              const fieldName = question.filterMapping[ans];
-              if (fieldName && item[fieldName] === "2") { // "2" = Oui
-                score += 1;
-              }
-              maxScore += 1;
-            });
-          }
-        }
-        else {
-          // Filtrage pour les autres critères (choix multiples)
-          if (Array.isArray(answer) && answer.length > 0) {
-            const itemValues = (item[question.filter] || '').split(',').map(s => s.trim());
-            
-            // Compter combien de valeurs sélectionnées sont présentes dans l'item
-            const matchCount = answer.filter(ans => itemValues.includes(ans)).length;
-            score += matchCount;
-            maxScore += answer.length;
-          }
-        }
-      });
+      // Si aucune correspondance de localisation, pénalité forte
+      if (!locationMatch) {
+        score -= 20; // Pénalité pour non-correspondance géographique
+      }
       
-      // Calculer le pourcentage de correspondance
-      const matchPercentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
+      // Ajouter au score maximal
+      maxScore += 10;
+    }
+    
+    // Parcourir toutes les autres réponses
+    Object.entries(answers).forEach(([questionId, answer]) => {
+      // Ignorer les questions de localisation déjà traitées
+      if (['location_scope', 'region_selection', 'department_selection'].includes(questionId)) {
+        return;
+      }
       
-      return {
-        item,
-        score,
-        maxScore,
-        matchPercentage,
-        locationMatch // Ajouter cette info pour l'affichage
-      };
+      const question = questions.find(q => q.id === questionId);
+      if (!question || !question.filter) return;
+      
+      // Différentes logiques selon le type de filtre
+      if (question.filter === 'listeListeTypeplateforme') {
+        // Filtrage pour le type de plateforme (choix unique)
+        if (answer && item[question.filter] === answer) {
+          score += 10; // Poids plus élevé pour ce critère essentiel
+        }
+        if (answer) maxScore += 10;
+      } 
+      else if (question.filter === 'ouinonFields') {
+        // Gestion des champs Oui/Non
+        if (Array.isArray(answer) && answer.length > 0) {
+          answer.forEach(ans => {
+            const fieldName = question.filterMapping[ans];
+            if (fieldName && item[fieldName] === "2") { // "2" = Oui
+              score += 1;
+            }
+            maxScore += 1;
+          });
+        }
+      }
+      else {
+        // Filtrage pour les autres critères (choix multiples)
+        if (Array.isArray(answer) && answer.length > 0) {
+          const itemValues = (item[question.filter] || '').split(',').map(s => s.trim());
+          
+          // Compter combien de valeurs sélectionnées sont présentes dans l'item
+          const matchCount = answer.filter(ans => itemValues.includes(ans)).length;
+          score += matchCount;
+          maxScore += answer.length;
+        }
+      }
     });
     
-    // Trier par pourcentage de correspondance décroissant
-    const sortedResults = scoredData
-      .sort((a, b) => b.matchPercentage - a.matchPercentage)
-      .filter(result => result.matchPercentage > 0); // Filtre les résultats avec un score positif
+    // Calculer le pourcentage de correspondance
+    const matchPercentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
     
-    setResults(sortedResults);
+    return {
+      item,
+      score,
+      maxScore,
+      matchPercentage,
+      locationMatch // Ajouter cette info pour l'affichage
+    };
+  });
+  
+  // Trier par pourcentage de correspondance décroissant
+  const sortedResults = scoredData
+    .sort((a, b) => b.matchPercentage - a.matchPercentage)
+    .filter(result => result.matchPercentage > 0); // Filtre les résultats avec un score positif
+  
+  setResults(sortedResults);
+  
+  // Enregistrer les résultats dans Firebase
+  try {
+    // Générer un ID de session unique si pas déjà existant
+    const sessionId = localStorage.getItem('assistant_session_id') || 
+                     'session_' + Date.now() + '_' + Math.random().toString(36).substring(2);
     
-    // Enregistrer les résultats dans Firebase
-    try {
-      // Générer un ID de session unique si pas déjà existant
-      const sessionId = localStorage.getItem('assistant_session_id') || 
-                       'session_' + Date.now() + '_' + Math.random().toString(36).substring(2);
-      
-      if (!localStorage.getItem('assistant_session_id')) {
-        localStorage.setItem('assistant_session_id', sessionId);
-      }
-      
-      // Enregistrer les critères de recherche
-      await addDoc(collection(db, "search_criteria"), {
-        sessionId: sessionId,
-        criteria: answers,
-        timestamp: new Date()
-      });
-      
-      // Enregistrer les résultats affichés
-      await addDoc(collection(db, "search_results"), {
-        sessionId: sessionId,
-        results: sortedResults.slice(0, 10).map((r, idx) => ({
-          platformId: r.item.id_fiche || '',
-          platformName: r.item.bf_titre || '',
-          position: idx + 1,
-          matchPercentage: r.matchPercentage,
-          locationMatch: r.locationMatch // Ajouter l'information de correspondance géographique
-        })),
-        timestamp: new Date()
-      });
-      
-      console.log("Résultats enregistrés avec succès");
-    } catch (error) {
-      console.error("Erreur lors de l'enregistrement des résultats:", error);
+    if (!localStorage.getItem('assistant_session_id')) {
+      localStorage.setItem('assistant_session_id', sessionId);
     }
-  };
+    
+    // Enregistrer les critères de recherche
+    await addDoc(collection(db, "search_criteria"), {
+      sessionId: sessionId,
+      criteria: answers,
+      timestamp: new Date()
+    });
+    
+    // Enregistrer les résultats affichés
+    await addDoc(collection(db, "search_results"), {
+      sessionId: sessionId,
+      results: sortedResults.slice(0, 10).map((r, idx) => ({
+        platformId: r.item.id_fiche || '',
+        platformName: r.item.bf_titre || '',
+        position: idx + 1,
+        matchPercentage: r.matchPercentage,
+        locationMatch: r.locationMatch // Ajouter l'information de correspondance géographique
+      })),
+      timestamp: new Date()
+    });
+    
+    console.log("Résultats enregistrés avec succès");
+  } catch (error) {
+    console.error("Erreur lors de l'enregistrement des résultats:", error);
+  }
+};
 
   // Rendu du composant
   return (
@@ -1330,58 +1330,58 @@ const Assistant = () => {
                           </div>
                           
                           {/* Pourquoi cet outil ? Section pliable/dépliable */}
-                          <details className="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-                            <summary className="py-2 px-4 cursor-pointer font-semibold">
-                              Correspondance avec vos critères
-                            </summary>
-                            <div className="p-4 text-sm">
-                              {/* Section spéciale pour afficher la correspondance géographique */}
-                              {answers['location_scope'] === '2' && (
-                                <div className="mb-4">
-                                  <h4 className="font-medium mb-2">Localisation</h4>
-                                  <div>
-                                    {result.locationMatch ? (
-                                      <p className="text-green-600 dark:text-green-400 flex items-center">
-                                        <CheckCircle size={16} className="mr-2" />
-                                        Cette plateforme est disponible dans votre zone géographique
-                                      </p>
-                                    ) : (
-                                      <p className="text-yellow-600 dark:text-yellow-400 flex items-center">
-                                        <HelpCircle size={16} className="mr-2" />
-                                        Cette plateforme a une couverture géographique limitée qui pourrait ne pas inclure votre zone
-                                      </p>
-                                    )}
-                                    
-                                    {/* Détails de la couverture */}
-                                    <div className="mt-2 pl-5">
-                                      {item['listeListeOuinonid_echellelocalisation'] === '1' && (
-                                        <p className="text-gray-600 dark:text-gray-300">Disponible dans toute la France</p>
-                                      )}
-                                      
-                                      {result.item.checkboxListeRegionsid_listeregions && (
-                                        <div>
-                                          <p className="font-medium mt-1">Régions couvertes:</p>
-                                          <ul className="list-disc pl-5">
-                                            {result.item.checkboxListeRegionsid_listeregions.split(',').map(id => {
-                                              const regionName = questions.find(q => q.id === 'region_selection')?.choices.find(c => c.id === id.trim())?.label;
-                                              return regionName ? <li key={id}>{regionName}</li> : null;
-                                            })}
-                                          </ul>
-                                        </div>
-                                      )}
-                                      
-                                      {result.item.checkboxListeDepartementsid_listedepartements && (
-                                        <div>
-                                          <p className="font-medium mt-1">Départements couverts:</p>
-                                          <p className="text-gray-600 dark:text-gray-300">
-                                            {result.item.checkboxListeDepartementsid_listedepartements}
-                                          </p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
+<details className="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+  <summary className="py-2 px-4 cursor-pointer font-semibold">
+    Correspondance avec vos critères
+  </summary>
+  <div className="p-4 text-sm">
+    {/* Section spéciale pour afficher la correspondance géographique */}
+    {answers['location_scope'] === '2' && (
+      <div className="mb-4">
+        <h4 className="font-medium mb-2">Localisation</h4>
+        <div>
+          {result.locationMatch ? (
+            <p className="text-green-600 dark:text-green-400 flex items-center">
+              <CheckCircle size={16} className="mr-2" />
+              Cette plateforme est disponible dans votre zone géographique
+            </p>
+          ) : (
+            <p className="text-yellow-600 dark:text-yellow-400 flex items-center">
+              <HelpCircle size={16} className="mr-2" />
+              Cette plateforme a une couverture géographique limitée qui pourrait ne pas inclure votre zone
+            </p>
+          )}
+          
+          {/* Détails de la couverture */}
+          <div className="mt-2 pl-5">
+            {result.item['listeListeOuinonid_echellelocalisation'] === '1' && (
+              <p className="text-gray-600 dark:text-gray-300">Disponible dans toute la France</p>
+            )}
+            
+            {result.item.checkboxListeRegionsid_listeregions && (
+              <div>
+                <p className="font-medium mt-1">Régions couvertes:</p>
+                <ul className="list-disc pl-5">
+                  {result.item.checkboxListeRegionsid_listeregions.split(',').map(id => {
+                    const regionName = questions.find(q => q.id === 'region_selection')?.choices.find(c => c.id === id.trim())?.label;
+                    return regionName ? <li key={id}>{regionName}</li> : null;
+                  })}
+                </ul>
+              </div>
+            )}
+            
+            {result.item.checkboxListeDepartementsid_listedepartements && (
+              <div>
+                <p className="font-medium mt-1">Départements couverts:</p>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {result.item.checkboxListeDepartementsid_listedepartements}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
                               
                               {/* Autres critères de correspondance */}
                               {Object.entries(answers).map(([questionId, answer]) => {
