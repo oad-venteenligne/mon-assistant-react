@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, RefreshCw, CheckCircle, ExternalLink, Search, HelpCircle } from 'lucide-react';
+import RegionDepartmentSelector from './components/RegionDepartmentSelector';
+
 
 // Imports pour Firebase
 import { db } from './firebase';
@@ -14,187 +16,32 @@ const questions = [
     type: 'welcome',
     nextQuestion: 'location_scope'
   },
-  {
-    id: 'location_scope',
-    title: "Quelle est la portée géographique que vous recherchez ?",
-    description: "Choisissez si vous souhaitez des plateformes disponibles partout en France ou spécifiques à votre région.",
-    type: 'choice',
-    choices: [
-      { id: '1', label: 'France entière', description: "Plateformes disponibles dans toute la France" },
-      { id: '2', label: 'Restriction géographique', description: "Plateformes spécifiques à ma région ou mon département" }
-    ],
-    filter: 'listeListeOuinonid_echellelocalisation',
-    multiple: false,
-    nextQuestion: (answer) => {
-      if (answer === '2') {
-        return 'region_selection';
-      } else {
-        return 'platform';
-      }
+{
+  id: 'location_scope',
+  title: "Quelle est la portée géographique que vous recherchez ?",
+  description: "Choisissez si vous souhaitez des plateformes disponibles partout en France ou spécifiques à votre région.",
+  type: 'choice',
+  choices: [
+    { id: '1', label: 'France entière', description: "Plateformes disponibles dans toute la France" },
+    { id: '2', label: 'Restriction géographique', description: "Plateformes spécifiques à ma région ou mon département" }
+  ],
+  filter: 'listeListeOuinonid_echellelocalisation',
+  multiple: false,
+  nextQuestion: (answer) => {
+    if (answer === '2') {
+      return 'geographic_selection';
+    } else {
+      return 'platform';
     }
-  },
-  {
-    id: 'region_selection',
-    title: "Dans quelle région êtes-vous situé ?",
-    description: "Sélectionnez votre région pour trouver des plateformes adaptées à votre localisation.",
-    type: 'choice',
-    choices: [
-      { id: '1', label: 'Auvergne-Rhône-Alpes' },
-      { id: '2', label: 'Bourgogne-Franche-Comté' },
-      { id: '3', label: 'Bretagne' },
-      { id: '4', label: 'Centre-Val de Loire' },
-      { id: '5', label: 'Corse' },
-      { id: '6', label: 'Grand Est' },
-      { id: '7', label: 'Hauts-de-France' },
-      { id: '8', label: 'Île-de-France' },
-      { id: '9', label: 'Normandie' },
-      { id: '10', label: 'Nouvelle-Aquitaine' },
-      { id: '11', label: 'Occitanie' },
-      { id: '12', label: 'Pays de la Loire' },
-      { id: '13', label: 'Provence-Alpes-Côte d\'Azur' }
-    ],
-    filter: 'checkboxListeRegionsid_listeregions',
-    multiple: false,
-    nextQuestion: 'department_selection'
-  },
-  {
-    id: 'department_selection',
-    title: "Dans quel département êtes-vous situé ?",
-    description: "Sélectionnez votre département pour affiner les résultats.",
-    type: 'choice',
-    getDepartmentChoices: (regionId) => {
-      // Dictionnaire des départements par région
-      const departmentsByRegion = {
-        '1': [ // Auvergne-Rhône-Alpes
-          { id: '01', label: 'Ain' },
-          { id: '03', label: 'Allier' },
-          { id: '07', label: 'Ardèche' },
-          { id: '15', label: 'Cantal' },
-          { id: '26', label: 'Drôme' },
-          { id: '38', label: 'Isère' },
-          { id: '42', label: 'Loire' },
-          { id: '43', label: 'Haute-Loire' },
-          { id: '63', label: 'Puy-de-Dôme' },
-          { id: '69', label: 'Rhône' },
-          { id: '73', label: 'Savoie' },
-          { id: '74', label: 'Haute-Savoie' }
-        ],
-        '2': [ // Bourgogne-Franche-Comté
-          { id: '21', label: 'Côte-d\'Or' },
-          { id: '25', label: 'Doubs' },
-          { id: '39', label: 'Jura' },
-          { id: '58', label: 'Nièvre' },
-          { id: '70', label: 'Haute-Saône' },
-          { id: '71', label: 'Saône-et-Loire' },
-          { id: '89', label: 'Yonne' },
-          { id: '90', label: 'Territoire de Belfort' }
-        ],
-        '3': [ // Bretagne
-          { id: '22', label: 'Côtes-d\'Armor' },
-          { id: '29', label: 'Finistère' },
-          { id: '35', label: 'Ille-et-Vilaine' },
-          { id: '56', label: 'Morbihan' }
-        ],
-        '4': [ // Centre-Val de Loire
-          { id: '18', label: 'Cher' },
-          { id: '28', label: 'Eure-et-Loir' },
-          { id: '36', label: 'Indre' },
-          { id: '37', label: 'Indre-et-Loire' },
-          { id: '41', label: 'Loir-et-Cher' },
-          { id: '45', label: 'Loiret' }
-        ],
-        '5': [ // Corse
-          { id: '2A', label: 'Corse-du-Sud' },
-          { id: '2B', label: 'Haute-Corse' }
-        ],
-        '6': [ // Grand Est
-          { id: '08', label: 'Ardennes' },
-          { id: '10', label: 'Aube' },
-          { id: '51', label: 'Marne' },
-          { id: '52', label: 'Haute-Marne' },
-          { id: '54', label: 'Meurthe-et-Moselle' },
-          { id: '55', label: 'Meuse' },
-          { id: '57', label: 'Moselle' },
-          { id: '67', label: 'Bas-Rhin' },
-          { id: '68', label: 'Haut-Rhin' },
-          { id: '88', label: 'Vosges' }
-        ],
-        '7': [ // Hauts-de-France
-          { id: '02', label: 'Aisne' },
-          { id: '59', label: 'Nord' },
-          { id: '60', label: 'Oise' },
-          { id: '62', label: 'Pas-de-Calais' },
-          { id: '80', label: 'Somme' }
-        ],
-        '8': [ // Île-de-France
-          { id: '75', label: 'Paris' },
-          { id: '77', label: 'Seine-et-Marne' },
-          { id: '78', label: 'Yvelines' },
-          { id: '91', label: 'Essonne' },
-          { id: '92', label: 'Hauts-de-Seine' },
-          { id: '93', label: 'Seine-Saint-Denis' },
-          { id: '94', label: 'Val-de-Marne' },
-          { id: '95', label: 'Val-d\'Oise' }
-        ],
-        '9': [ // Normandie
-          { id: '14', label: 'Calvados' },
-          { id: '27', label: 'Eure' },
-          { id: '50', label: 'Manche' },
-          { id: '61', label: 'Orne' },
-          { id: '76', label: 'Seine-Maritime' }
-        ],
-        '10': [ // Nouvelle-Aquitaine
-          { id: '16', label: 'Charente' },
-          { id: '17', label: 'Charente-Maritime' },
-          { id: '19', label: 'Corrèze' },
-          { id: '23', label: 'Creuse' },
-          { id: '24', label: 'Dordogne' },
-          { id: '33', label: 'Gironde' },
-          { id: '40', label: 'Landes' },
-          { id: '47', label: 'Lot-et-Garonne' },
-          { id: '64', label: 'Pyrénées-Atlantiques' },
-          { id: '79', label: 'Deux-Sèvres' },
-          { id: '86', label: 'Vienne' },
-          { id: '87', label: 'Haute-Vienne' }
-        ],
-        '11': [ // Occitanie
-          { id: '09', label: 'Ariège' },
-          { id: '11', label: 'Aude' },
-          { id: '12', label: 'Aveyron' },
-          { id: '30', label: 'Gard' },
-          { id: '31', label: 'Haute-Garonne' },
-          { id: '32', label: 'Gers' },
-          { id: '34', label: 'Hérault' },
-          { id: '46', label: 'Lot' },
-          { id: '48', label: 'Lozère' },
-          { id: '65', label: 'Hautes-Pyrénées' },
-          { id: '66', label: 'Pyrénées-Orientales' },
-          { id: '81', label: 'Tarn' },
-          { id: '82', label: 'Tarn-et-Garonne' }
-        ],
-        '12': [ // Pays de la Loire
-          { id: '44', label: 'Loire-Atlantique' },
-          { id: '49', label: 'Maine-et-Loire' },
-          { id: '53', label: 'Mayenne' },
-          { id: '72', label: 'Sarthe' },
-          { id: '85', label: 'Vendée' }
-        ],
-        '13': [ // Provence-Alpes-Côte d'Azur
-          { id: '04', label: 'Alpes-de-Haute-Provence' },
-          { id: '05', label: 'Hautes-Alpes' },
-          { id: '06', label: 'Alpes-Maritimes' },
-          { id: '13', label: 'Bouches-du-Rhône' },
-          { id: '83', label: 'Var' },
-          { id: '84', label: 'Vaucluse' }
-        ]
-      };
-      
-      return departmentsByRegion[regionId] || [];
-    },
-    filter: 'checkboxListeDepartementsid_listedepartements',
-    multiple: false,
-    nextQuestion: 'platform'
-  },
+  }
+},
+{
+  id: 'geographic_selection',
+  title: "Sélection géographique",
+  description: "Sélectionnez les régions et départements qui vous intéressent.",
+  type: 'geographic_selector', // Nouveau type de question
+  nextQuestion: 'platform'
+},
 {
   id: 'platform',
   title: "Quel type d'outil recherchez-vous principalement ?",
@@ -805,13 +652,13 @@ const fetchData = () => {
   };
 
 // Correction des erreurs dans la fonction calculateResults
+// Fonction calculateResults() complète à copier-coller
 const calculateResults = async () => {
   if (data.length === 0) {
     setResults([]);
     return;
   }
 
-  // Calculer un score pour chaque outil basé sur les réponses
   // Première étape : filtrer les plateformes selon le critère de localisation
   const filteredData = data.filter(item => {
     // Si l'utilisateur n'a pas spécifié de préférence de localisation, inclure toutes les plateformes
@@ -828,31 +675,43 @@ const calculateResults = async () => {
     
     // Si l'utilisateur a choisi une restriction géographique
     if (locationScope === '2') {
-      const selectedRegion = answers['region_selection'];
-      const selectedDepartment = answers['department_selection'];
+      const selectedRegions = answers['region_selection'] || [];
+      const selectedDepartments = answers['department_selection'] || [];
       
       // Les plateformes France entière sont toujours disponibles
       if (item['listeListeOuinonid_echellelocalisation'] === '1') {
         return true;
       }
       
-      // Vérifier correspondance de région
-      if (selectedRegion) {
-        const itemRegions = (item['checkboxListeRegionsid_listeregions'] || '').split(',').map(s => s.trim());
-        if (itemRegions.includes(selectedRegion)) {
-          return true;
+      // Vérifier correspondance de région ou département
+      if (selectedRegions.length > 0 || selectedDepartments.length > 0) {
+        // Vérifier correspondance de région
+        if (selectedRegions.length > 0) {
+          const itemRegions = (item['checkboxListeRegionsid_listeregions'] || '').split(',').map(s => s.trim());
+          // Si au moins une région correspond
+          for (const regionId of selectedRegions) {
+            if (itemRegions.includes(regionId)) {
+              return true;
+            }
+          }
         }
+        
+        // Vérifier correspondance de département
+        if (selectedDepartments.length > 0) {
+          const itemDepartments = (item['checkboxListeDepartementsid_listedepartements'] || '').split(',').map(s => s.trim());
+          // Si au moins un département correspond
+          for (const deptId of selectedDepartments) {
+            if (itemDepartments.includes(deptId)) {
+              return true;
+            }
+          }
+        }
+        
+        // Si aucune correspondance géographique, exclure la plateforme
+        return false;
       }
       
-      // Vérifier correspondance de département
-      if (selectedDepartment) {
-        const itemDepartments = (item['checkboxListeDepartementsid_listedepartements'] || '').split(',').map(s => s.trim());
-        if (itemDepartments.includes(selectedDepartment)) {
-          return true;
-        }
-      }
-      
-      // Si aucune correspondance géographique, exclure la plateforme
+      // Par défaut, si l'utilisateur a choisi une restriction mais n'a pas sélectionné de régions/départements
       return false;
     }
     
@@ -965,6 +824,7 @@ const calculateResults = async () => {
   }
 };
 
+
   // Rendu du composant
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100">
@@ -1028,6 +888,29 @@ const calculateResults = async () => {
                   Commencer <ArrowRight size={18} className="ml-2" />
                 </button>
               </div>
+            )}
+
+            {currentQuestion.type === 'geographic_selector' && (
+              <RegionDepartmentSelector 
+                onComplete={(data) => {
+                  if (data.cancel) {
+                    // Si l'utilisateur annule, revenir à la question précédente
+                    goToPreviousQuestion();
+                  } else {
+                    // Sauvegarder les données et passer à la question suivante
+                    setAnswers(prev => ({
+                      ...prev,
+                      'region_selection': data.selectedRegions,
+                      'department_selection': data.selectedDepartements
+                    }));
+                    goToNextQuestion();
+                  }
+                }}
+                initialData={{
+                  selectedRegions: answers['region_selection'] || [],
+                  selectedDepartements: answers['department_selection'] || []
+                }}
+              />
             )}
             
             {/* Questions à choix */}

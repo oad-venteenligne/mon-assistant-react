@@ -1,3 +1,4 @@
+// src/components/MapSelect.js - Composant mis à jour
 import React, { useState, useEffect } from 'react';
 import { MapDepartements } from '@socialgouv/react-departements';
 
@@ -28,44 +29,16 @@ const departementNames = {
   "93": "Seine-Saint-Denis", "94": "Val-de-Marne", "95": "Val-d'Oise"
 };
 
-// Départements par région
-const departementsByRegion = {
-  '1': ['01', '03', '07', '15', '26', '38', '42', '43', '63', '69', '73', '74'], // Auvergne-Rhône-Alpes
-  '2': ['21', '25', '39', '58', '70', '71', '89', '90'], // Bourgogne-Franche-Comté
-  '3': ['22', '29', '35', '56'], // Bretagne
-  '4': ['18', '28', '36', '37', '41', '45'], // Centre-Val de Loire
-  '5': ['2A', '2B'], // Corse
-  '6': ['08', '10', '51', '52', '54', '55', '57', '67', '68', '88'], // Grand Est
-  '7': ['02', '59', '60', '62', '80'], // Hauts-de-France
-  '8': ['75', '77', '78', '91', '92', '93', '94', '95'], // Île-de-France
-  '9': ['14', '27', '50', '61', '76'], // Normandie
-  '10': ['16', '17', '19', '23', '24', '33', '40', '47', '64', '79', '86', '87'], // Nouvelle-Aquitaine
-  '11': ['09', '11', '12', '30', '31', '32', '34', '46', '48', '65', '66', '81', '82'], // Occitanie
-  '12': ['44', '49', '53', '72', '85'], // Pays de la Loire
-  '13': ['04', '05', '06', '13', '83', '84'] // Provence-Alpes-Côte d'Azur
-};
-
-// Noms des régions
-const regionNames = {
-  '1': 'Auvergne-Rhône-Alpes',
-  '2': 'Bourgogne-Franche-Comté',
-  '3': 'Bretagne',
-  '4': 'Centre-Val de Loire',
-  '5': 'Corse',
-  '6': 'Grand Est',
-  '7': 'Hauts-de-France',
-  '8': 'Île-de-France',
-  '9': 'Normandie',
-  '10': 'Nouvelle-Aquitaine',
-  '11': 'Occitanie',
-  '12': 'Pays de la Loire',
-  '13': 'Provence-Alpes-Côte d\'Azur'
-};
-
-const MapSelect = ({ onSelect, selectedDepartements = [], regionFilter }) => {
+const MapSelect = ({ onSelect, selectedDepartements = [], availableDepartements = [] }) => {
   const [hoveredDepartement, setHoveredDepartement] = useState(null);
-  const [filteredDepartements, setFilteredDepartements] = useState([]);
   const [viewBox, setViewBox] = useState("0 0 600 600");
+
+  // Ajuster le viewBox en fonction des départements disponibles
+  useEffect(() => {
+    // Ici, on pourrait ajuster le viewBox de manière dynamique en fonction des départements disponibles
+    // Pour simplifier, on garde une vue complète de la France
+    setViewBox("0 0 600 600");
+  }, [availableDepartements]);
 
   // Couleurs pour les départements sur la carte
   const colors = {
@@ -77,32 +50,6 @@ const MapSelect = ({ onSelect, selectedDepartements = [], regionFilter }) => {
     textLight: '#f9fafb'   // couleur du texte clair
   };
 
-  // Ajustements du viewBox pour les régions spécifiques
-  useEffect(() => {
-    if (regionFilter === '5') { // Corse
-      setViewBox("530 370 100 100");
-    } else if (regionFilter === '8') { // Île-de-France
-      setViewBox("320 200 50 50");
-    } else if (regionFilter) {
-      // Pour les autres régions, zoomer sur elles en utilisant les coordonnées de leurs départements
-      setViewBox("0 0 600 600"); // Default view temporairement
-    } else {
-      setViewBox("0 0 600 600"); // Vue complète de la France
-    }
-  }, [regionFilter]);
-
-  // Filtrer les départements selon la région sélectionnée
-  useEffect(() => {
-    if (!regionFilter) {
-      // Si aucune région n'est sélectionnée, tous les départements sont disponibles
-      setFilteredDepartements([]);
-      return;
-    }
-    
-    // Si une région est sélectionnée, on filtre les départements
-    setFilteredDepartements(departementsByRegion[regionFilter] || []);
-  }, [regionFilter]);
-  
   // Liste complète des départements à afficher
   const allDepartements = [
     ...Array.from({ length: 19 }, (_, i) => (i + 1).toString().padStart(2, '0')),
@@ -112,11 +59,12 @@ const MapSelect = ({ onSelect, selectedDepartements = [], regionFilter }) => {
 
   // Fonction pour gérer le clic sur un département
   const handleClick = (departement) => {
-    // Si le département n'est pas dans la région filtrée, ne rien faire
-    if (filteredDepartements.length > 0 && !filteredDepartements.includes(departement)) {
-      return;
+    // Si des départements sont spécifiés comme disponibles et que le département cliqué n'en fait pas partie
+    if (availableDepartements.length > 0 && !availableDepartements.includes(departement)) {
+      return; // On ne fait rien
     }
     
+    // Sinon, on appelle la fonction onSelect fournie en prop
     onSelect(departement);
   };
 
@@ -127,14 +75,16 @@ const MapSelect = ({ onSelect, selectedDepartements = [], regionFilter }) => {
       return colors.selected;
     }
     
-    // Si on a un filtre de région et que le département n'est pas dans la région
-    if (filteredDepartements.length > 0 && !filteredDepartements.includes(departement)) {
+    // Si on a des départements spécifiés comme disponibles et que le département n'en fait pas partie
+    if (availableDepartements.length > 0 && !availableDepartements.includes(departement)) {
       return colors.disabled;
     }
     
-    // Si le département est survolé
+    // Si le département est survolé et qu'il est disponible
     if (departement === hoveredDepartement) {
-      return colors.hover;
+      if (availableDepartements.length === 0 || availableDepartements.includes(departement)) {
+        return colors.hover;
+      }
     }
     
     // Couleur par défaut
@@ -142,15 +92,17 @@ const MapSelect = ({ onSelect, selectedDepartements = [], regionFilter }) => {
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full mb-6">
       <div className="flex flex-col md:flex-row md:gap-4">
         {/* Carte des départements - côté gauche sur écrans larges */}
         <div className="md:w-2/3 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden mb-4 md:mb-0">
-          {/* Information sur la région sélectionnée */}
-          {regionFilter && (
+          {/* Information sur les départements sélectionnables */}
+          {availableDepartements.length > 0 && (
             <div className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 p-3 rounded-lg mb-4">
-              <div className="font-semibold">Région : {regionNames[regionFilter]}</div>
-              <div className="text-sm">Cliquez sur les départements pour les sélectionner</div>
+              <div className="text-sm">
+                {availableDepartements.length} départements disponibles pour la sélection.
+                Cliquez sur les départements pour les sélectionner.
+              </div>
             </div>
           )}
           
@@ -179,10 +131,13 @@ const MapSelect = ({ onSelect, selectedDepartements = [], regionFilter }) => {
               <div className="text-center">
                 <div className="font-semibold text-lg">{hoveredDepartement} - {departementNames[hoveredDepartement]}</div>
                 <div className="text-sm mt-1">
-                  {selectedDepartements.includes(hoveredDepartement) 
-                    ? <span className="text-green-600 dark:text-green-400">✓ Sélectionné</span>
-                    : <span className="text-gray-500 dark:text-gray-400">Cliquez pour sélectionner</span>
-                  }
+                  {selectedDepartements.includes(hoveredDepartement) ? (
+                    <span className="text-green-600 dark:text-green-400">✓ Sélectionné</span>
+                  ) : availableDepartements.length > 0 && !availableDepartements.includes(hoveredDepartement) ? (
+                    <span className="text-gray-500 dark:text-gray-400">Non disponible</span>
+                  ) : (
+                    <span className="text-gray-500 dark:text-gray-400">Cliquez pour sélectionner</span>
+                  )}
                 </div>
               </div>
             ) : (
@@ -204,10 +159,10 @@ const MapSelect = ({ onSelect, selectedDepartements = [], regionFilter }) => {
                 <div className="w-4 h-4 rounded-sm mr-2" style={{ backgroundColor: colors.selected }}></div>
                 <span className="text-sm">Sélectionné</span>
               </div>
-              {filteredDepartements.length > 0 && (
+              {availableDepartements.length > 0 && (
                 <div className="flex items-center">
                   <div className="w-4 h-4 rounded-sm mr-2" style={{ backgroundColor: colors.disabled }}></div>
-                  <span className="text-sm">Hors région</span>
+                  <span className="text-sm">Non disponible</span>
                 </div>
               )}
             </div>
@@ -220,17 +175,9 @@ const MapSelect = ({ onSelect, selectedDepartements = [], regionFilter }) => {
               <li>Cliquez sur un département pour le sélectionner</li>
               <li>Cliquez à nouveau pour le désélectionner</li>
               <li>Vous pouvez sélectionner plusieurs départements</li>
-              {regionFilter && (
-                <li>Seuls les départements de la région <span className="font-semibold">{regionNames[regionFilter]}</span> sont sélectionnables</li>
-              )}
             </ul>
           </div>
         </div>
-      </div>
-      
-      {/* Message d'aide */}
-      <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 italic">
-        Sélectionnez les départements où vous souhaitez commercialiser vos produits.
       </div>
     </div>
   );
