@@ -1436,7 +1436,7 @@ const calculateResults = async () => {
                     <RefreshCw size={18} className="mr-2" /> Recommencer avec de nouveaux critères
                   </button>
                 </div>
-              </div>
+              </>
             )}
           </div>
         )}
