@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, RefreshCw, CheckCircle, ExternalLink, Search, HelpCircle } from 'lucide-react';
 
+// Imports pour Map interractive
+import MapSelect from './components/MapSelect';
+import SelectedDepartements from './components/SelectedDepartements';
+
 // Imports pour Firebase
 import { db } from './firebase';
 import { collection, addDoc } from 'firebase/firestore';
@@ -54,145 +58,16 @@ const questions = [
       { id: '13', label: 'Provence-Alpes-Côte d\'Azur' }
     ],
     filter: 'checkboxListeRegionsid_listeregions',
-    multiple: false,
+    multiple: true,
     nextQuestion: 'department_selection'
   },
   {
     id: 'department_selection',
-    title: "Dans quel département êtes-vous situé ?",
-    description: "Sélectionnez votre département pour affiner les résultats.",
-    type: 'choice',
-    getDepartmentChoices: (regionId) => {
-      // Dictionnaire des départements par région
-      const departmentsByRegion = {
-        '1': [ // Auvergne-Rhône-Alpes
-          { id: '01', label: 'Ain' },
-          { id: '03', label: 'Allier' },
-          { id: '07', label: 'Ardèche' },
-          { id: '15', label: 'Cantal' },
-          { id: '26', label: 'Drôme' },
-          { id: '38', label: 'Isère' },
-          { id: '42', label: 'Loire' },
-          { id: '43', label: 'Haute-Loire' },
-          { id: '63', label: 'Puy-de-Dôme' },
-          { id: '69', label: 'Rhône' },
-          { id: '73', label: 'Savoie' },
-          { id: '74', label: 'Haute-Savoie' }
-        ],
-        '2': [ // Bourgogne-Franche-Comté
-          { id: '21', label: 'Côte-d\'Or' },
-          { id: '25', label: 'Doubs' },
-          { id: '39', label: 'Jura' },
-          { id: '58', label: 'Nièvre' },
-          { id: '70', label: 'Haute-Saône' },
-          { id: '71', label: 'Saône-et-Loire' },
-          { id: '89', label: 'Yonne' },
-          { id: '90', label: 'Territoire de Belfort' }
-        ],
-        '3': [ // Bretagne
-          { id: '22', label: 'Côtes-d\'Armor' },
-          { id: '29', label: 'Finistère' },
-          { id: '35', label: 'Ille-et-Vilaine' },
-          { id: '56', label: 'Morbihan' }
-        ],
-        '4': [ // Centre-Val de Loire
-          { id: '18', label: 'Cher' },
-          { id: '28', label: 'Eure-et-Loir' },
-          { id: '36', label: 'Indre' },
-          { id: '37', label: 'Indre-et-Loire' },
-          { id: '41', label: 'Loir-et-Cher' },
-          { id: '45', label: 'Loiret' }
-        ],
-        '5': [ // Corse
-          { id: '2A', label: 'Corse-du-Sud' },
-          { id: '2B', label: 'Haute-Corse' }
-        ],
-        '6': [ // Grand Est
-          { id: '08', label: 'Ardennes' },
-          { id: '10', label: 'Aube' },
-          { id: '51', label: 'Marne' },
-          { id: '52', label: 'Haute-Marne' },
-          { id: '54', label: 'Meurthe-et-Moselle' },
-          { id: '55', label: 'Meuse' },
-          { id: '57', label: 'Moselle' },
-          { id: '67', label: 'Bas-Rhin' },
-          { id: '68', label: 'Haut-Rhin' },
-          { id: '88', label: 'Vosges' }
-        ],
-        '7': [ // Hauts-de-France
-          { id: '02', label: 'Aisne' },
-          { id: '59', label: 'Nord' },
-          { id: '60', label: 'Oise' },
-          { id: '62', label: 'Pas-de-Calais' },
-          { id: '80', label: 'Somme' }
-        ],
-        '8': [ // Île-de-France
-          { id: '75', label: 'Paris' },
-          { id: '77', label: 'Seine-et-Marne' },
-          { id: '78', label: 'Yvelines' },
-          { id: '91', label: 'Essonne' },
-          { id: '92', label: 'Hauts-de-Seine' },
-          { id: '93', label: 'Seine-Saint-Denis' },
-          { id: '94', label: 'Val-de-Marne' },
-          { id: '95', label: 'Val-d\'Oise' }
-        ],
-        '9': [ // Normandie
-          { id: '14', label: 'Calvados' },
-          { id: '27', label: 'Eure' },
-          { id: '50', label: 'Manche' },
-          { id: '61', label: 'Orne' },
-          { id: '76', label: 'Seine-Maritime' }
-        ],
-        '10': [ // Nouvelle-Aquitaine
-          { id: '16', label: 'Charente' },
-          { id: '17', label: 'Charente-Maritime' },
-          { id: '19', label: 'Corrèze' },
-          { id: '23', label: 'Creuse' },
-          { id: '24', label: 'Dordogne' },
-          { id: '33', label: 'Gironde' },
-          { id: '40', label: 'Landes' },
-          { id: '47', label: 'Lot-et-Garonne' },
-          { id: '64', label: 'Pyrénées-Atlantiques' },
-          { id: '79', label: 'Deux-Sèvres' },
-          { id: '86', label: 'Vienne' },
-          { id: '87', label: 'Haute-Vienne' }
-        ],
-        '11': [ // Occitanie
-          { id: '09', label: 'Ariège' },
-          { id: '11', label: 'Aude' },
-          { id: '12', label: 'Aveyron' },
-          { id: '30', label: 'Gard' },
-          { id: '31', label: 'Haute-Garonne' },
-          { id: '32', label: 'Gers' },
-          { id: '34', label: 'Hérault' },
-          { id: '46', label: 'Lot' },
-          { id: '48', label: 'Lozère' },
-          { id: '65', label: 'Hautes-Pyrénées' },
-          { id: '66', label: 'Pyrénées-Orientales' },
-          { id: '81', label: 'Tarn' },
-          { id: '82', label: 'Tarn-et-Garonne' }
-        ],
-        '12': [ // Pays de la Loire
-          { id: '44', label: 'Loire-Atlantique' },
-          { id: '49', label: 'Maine-et-Loire' },
-          { id: '53', label: 'Mayenne' },
-          { id: '72', label: 'Sarthe' },
-          { id: '85', label: 'Vendée' }
-        ],
-        '13': [ // Provence-Alpes-Côte d'Azur
-          { id: '04', label: 'Alpes-de-Haute-Provence' },
-          { id: '05', label: 'Hautes-Alpes' },
-          { id: '06', label: 'Alpes-Maritimes' },
-          { id: '13', label: 'Bouches-du-Rhône' },
-          { id: '83', label: 'Var' },
-          { id: '84', label: 'Vaucluse' }
-        ]
-      };
-      
-      return departmentsByRegion[regionId] || [];
-    },
+    title: "Sélectionnez les départements qui vous intéressent",
+    description: "Cliquez sur les départements dans lesquels vous souhaitez commercialiser vos produits.",
+    type: 'map',
     filter: 'checkboxListeDepartementsid_listedepartements',
-    multiple: false,
+    multiple: true,
     nextQuestion: 'platform'
   },
 {
@@ -516,69 +391,23 @@ const Assistant = () => {
   }, {});
 
   // Charger les données initiales
-useEffect(() => {
-  // Essayer de charger depuis le localStorage d'abord
-  const cachedDataString = localStorage.getItem('toolsDataCache');
-  const cacheTimestampString = localStorage.getItem('toolsDataCacheTimestamp');
-  
-  if (cachedDataString && cacheTimestampString) {
-    try {
-      // Vérifier si le cache est périmé (par exemple après 1 jours)
-      const cacheTimestamp = parseInt(cacheTimestampString);
-      const currentTime = Date.now();
-      const cacheExpirationMs = 24 * 60 * 60 * 1000; // 1 jours en millisecondes
-      
-      if (currentTime - cacheTimestamp < cacheExpirationMs) {
-        // Le cache n'est pas périmé, on l'utilise
-        setData(JSON.parse(cachedDataString));
+  useEffect(() => {
+    // Essayer de charger depuis le localStorage d'abord
+    const cachedData = localStorage.getItem('toolsDataCache');
+    
+    if (cachedData) {
+      try {
+        setData(JSON.parse(cachedData));
         setLoading(false);
-      } else {
-        // Le cache est périmé, on récupère de nouvelles données
+      } catch (e) {
+        console.error("Erreur lors de la lecture du cache:", e);
         fetchData();
       }
-    } catch (e) {
-      console.error("Erreur lors de la lecture du cache:", e);
+    } else {
       fetchData();
     }
-  } else {
-    fetchData();
-  }
-}, []);
+  }, []);
 
-// Fonction pour fetcher les données modifiée
-const fetchData = () => {
-  setLoading(true);
-  
-  // Simulation de chargement pour la démo
-  // En production, utilisez votre API réelle
-  setTimeout(() => {
-    fetch("/api/data")
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Erreur réseau: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        const dataArray = Object.values(data);
-        setData(dataArray);
-        
-        // Mettre en cache avec un timestamp
-        try {
-          localStorage.setItem('toolsDataCache', JSON.stringify(dataArray));
-          localStorage.setItem('toolsDataCacheTimestamp', Date.now().toString());
-        } catch (e) {
-          console.warn("Impossible de mettre en cache les données:", e);
-        }
-        
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error("Erreur lors du chargement des données:", error);
-        setLoading(false);
-      });
-  }, 1000);
-};
   // Mettre à jour les départements lorsque la région est sélectionnée
   useEffect(() => {
     if (currentQuestionId === 'department_selection' && answers['region_selection']) {
@@ -591,7 +420,41 @@ const fetchData = () => {
     }
   }, [currentQuestionId, answers]);
 
-   // Mettre à jour la barre de progression
+  // Fonction pour fetcher les données
+  const fetchData = () => {
+    setLoading(true);
+    
+    // Simulation de chargement pour la démo
+    // En production, utilisez votre API réelle
+    setTimeout(() => {
+      fetch("/api/data")
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Erreur réseau: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          const dataArray = Object.values(data);
+          setData(dataArray);
+          
+          // Mettre en cache
+          try {
+            localStorage.setItem('toolsDataCache', JSON.stringify(dataArray));
+          } catch (e) {
+            console.warn("Impossible de mettre en cache les données:", e);
+          }
+          
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error("Erreur lors du chargement des données:", error);
+          setLoading(false);
+        });
+    }, 1000);
+  };
+
+  // Mettre à jour la barre de progression
   useEffect(() => {
     if (currentQuestionId === 'welcome') {
       setProgress(0);
@@ -805,67 +668,69 @@ const fetchData = () => {
   };
 
 // Correction des erreurs dans la fonction calculateResults
+// Fonction pour calculer les résultats en fonction des critères sélectionnés
+// Fonction pour calculer les résultats en fonction des critères sélectionnés
 const calculateResults = async () => {
+  // Si aucune donnée n'est disponible, renvoyer un tableau vide
   if (data.length === 0) {
     setResults([]);
     return;
   }
 
-  // Calculer un score pour chaque outil basé sur les réponses
-  // Première étape : filtrer les plateformes selon le critère de localisation
-  const filteredData = data.filter(item => {
-    // Si l'utilisateur n'a pas spécifié de préférence de localisation, inclure toutes les plateformes
+  // ÉTAPE 1: Pré-filtrage selon la localisation
+  const preFilteredData = data.filter(platform => {
+    // Si l'utilisateur n'a pas choisi de critère de localisation, inclure tous les platforms
     if (!answers['location_scope']) {
       return true;
     }
     
-    const locationScope = answers['location_scope'];
-    
-    // Si l'utilisateur a choisi France entière, garder toutes les plateformes
-    if (locationScope === '1') {
+    // Si l'utilisateur a choisi "France entière"
+    if (answers['location_scope'] === '1') {
       return true;
     }
     
-    // Si l'utilisateur a choisi une restriction géographique
-    if (locationScope === '2') {
-      const selectedRegion = answers['region_selection'];
-      const selectedDepartment = answers['department_selection'];
-      
-      // Les plateformes France entière sont toujours disponibles
-      if (item['listeListeOuinonid_echellelocalisation'] === '1') {
+    // Si l'utilisateur a choisi une restriction géographique (région/département)
+    if (answers['location_scope'] === '2') {
+      // Les plateformes France entière sont toujours incluses
+      if (platform['listeListeOuinonid_echellelocalisation'] === '1') {
         return true;
       }
       
-      // Vérifier correspondance de région
+      // Vérifier la correspondance de région
+      const selectedRegion = answers['region_selection'];
       if (selectedRegion) {
-        const itemRegions = (item['checkboxListeRegionsid_listeregions'] || '').split(',').map(s => s.trim());
-        if (itemRegions.includes(selectedRegion)) {
+        const platformRegions = (platform['checkboxListeRegionsid_listeregions'] || '').split(',').map(s => s.trim());
+        if (platformRegions.includes(selectedRegion)) {
           return true;
         }
       }
       
-      // Vérifier correspondance de département
-      if (selectedDepartment) {
-        const itemDepartments = (item['checkboxListeDepartementsid_listedepartements'] || '').split(',').map(s => s.trim());
-        if (itemDepartments.includes(selectedDepartment)) {
-          return true;
+      // Vérifier la correspondance de département(s)
+      const selectedDepartments = answers['department_selection'] || [];
+      if (selectedDepartments.length > 0) {
+        const platformDepartments = (platform['checkboxListeDepartementsid_listedepartements'] || '').split(',').map(s => s.trim());
+        
+        // Si au moins un département sélectionné correspond à la platform
+        for (const dept of selectedDepartments) {
+          if (platformDepartments.includes(dept)) {
+            return true;
+          }
         }
       }
       
-      // Si aucune correspondance géographique, exclure la plateforme
+      // Aucune correspondance géographique
       return false;
     }
     
     return true;
   });
   
-  // Deuxième étape : calculer le score pour les plateformes qui ont passé le filtre de localisation
-  const scoredData = filteredData.map(item => {
+  // ÉTAPE 2: Calculer le score pour chaque plateforme pré-filtrée
+  const scoredResults = preFilteredData.map(platform => {
     let matchedCriteria = 0;
     let totalCriteria = 0;
-    let locationMatch = true; // Par défaut, toutes les plateformes ici ont déjà satisfait le critère de localisation
     
-    // Parcourir toutes les autres réponses
+    // Parcourir toutes les réponses (sauf les questions de localisation déjà traitées)
     Object.entries(answers).forEach(([questionId, answer]) => {
       // Ignorer les questions de localisation déjà traitées
       if (['location_scope', 'region_selection', 'department_selection'].includes(questionId)) {
@@ -875,35 +740,34 @@ const calculateResults = async () => {
       const question = questions.find(q => q.id === questionId);
       if (!question || !question.filter) return;
       
-      // Différentes logiques selon le type de filtre
+      // Traitement selon le type de filtre
       if (question.filter === 'listeListeTypeplateforme') {
-        // Filtrage pour le type de plateforme (choix unique)
+        // Type de plateforme (choix unique)
         totalCriteria++;
-        if (answer && item[question.filter] === answer) {
+        if (answer && platform[question.filter] === answer) {
           matchedCriteria++;
         }
       } 
       else if (question.filter === 'ouinonFields') {
-        // Gestion des champs Oui/Non
+        // Champs Oui/Non (multiples)
         if (Array.isArray(answer) && answer.length > 0) {
           answer.forEach(ans => {
             const fieldName = question.filterMapping[ans];
             totalCriteria++;
-            if (fieldName && item[fieldName] === "2") { // "2" = Oui
+            if (fieldName && platform[fieldName] === "2") { // "2" = Oui
               matchedCriteria++;
             }
           });
         }
       }
-      else {
-        // Filtrage pour les autres critères (choix multiples)
+      else if (question.filter.startsWith('checkbox') || question.filter.startsWith('liste')) {
+        // Critères à choix multiples
         if (Array.isArray(answer) && answer.length > 0) {
-          const itemValues = (item[question.filter] || '').split(',').map(s => s.trim());
+          const platformValues = (platform[question.filter] || '').split(',').map(s => s.trim());
           
-          // Compter chaque valeur sélectionnée comme un critère distinct
           answer.forEach(ans => {
             totalCriteria++;
-            if (itemValues.includes(ans)) {
+            if (platformValues.includes(ans)) {
               matchedCriteria++;
             }
           });
@@ -912,24 +776,26 @@ const calculateResults = async () => {
     });
     
     // Calculer le pourcentage de correspondance
-    const matchPercentage = totalCriteria > 0 ? Math.round((matchedCriteria / totalCriteria) * 100) : 0;
+    const matchPercentage = totalCriteria > 0 
+      ? Math.round((matchedCriteria / totalCriteria) * 100) 
+      : 0;
     
     return {
-      item,
+      item: platform,
       matchedCriteria,
       totalCriteria,
       matchPercentage,
-      locationMatch // Ajouter cette info pour l'affichage
+      // Indiquer si cette plateforme est disponible dans la zone géographique de l'utilisateur
+      locationMatch: true // Déjà pré-filtré, donc toujours true
     };
   });
   
-  // Trier par pourcentage de correspondance décroissant
-  const sortedResults = scoredData
-    .sort((a, b) => b.matchPercentage - a.matchPercentage);
+  // ÉTAPE 3: Trier les résultats par pourcentage de correspondance décroissant
+  const sortedResults = scoredResults.sort((a, b) => b.matchPercentage - a.matchPercentage);
   
   setResults(sortedResults);
   
-  // Enregistrer les résultats dans Firebase
+  // ÉTAPE 4: Enregistrement des données (si Firebase est configuré)
   try {
     // Générer un ID de session unique si pas déjà existant
     const sessionId = localStorage.getItem('assistant_session_id') || 
@@ -946,15 +812,14 @@ const calculateResults = async () => {
       timestamp: new Date()
     });
     
-    // Enregistrer les résultats affichés
+    // Enregistrer les résultats affichés (les 10 premiers)
     await addDoc(collection(db, "search_results"), {
       sessionId: sessionId,
       results: sortedResults.slice(0, 10).map((r, idx) => ({
         platformId: r.item.id_fiche || '',
         platformName: r.item.bf_titre || '',
         position: idx + 1,
-        matchPercentage: r.matchPercentage,
-        locationMatch: r.locationMatch
+        matchPercentage: r.matchPercentage
       })),
       timestamp: new Date()
     });
@@ -1029,6 +894,75 @@ const calculateResults = async () => {
                 </button>
               </div>
             )}
+            {/* Section carte de sélection des départements */}
+            {currentQuestion.type === 'map' && (
+              <div>
+                <h2 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
+                <p className="mb-6 text-gray-600 dark:text-gray-300 italic">{currentQuestion.description}</p>
+                
+                <div className="mb-6">
+                  <MapSelect 
+                    onSelect={(departement) => {
+                      // Gérer la sélection/désélection de départements
+                      setAnswers(prev => {
+                        const newAnswers = { ...prev };
+                        
+                        if (!newAnswers[currentQuestionId]) {
+                          newAnswers[currentQuestionId] = [];
+                        }
+                        
+                        const index = newAnswers[currentQuestionId].indexOf(departement);
+                        if (index === -1) {
+                          newAnswers[currentQuestionId] = [...newAnswers[currentQuestionId], departement];
+                        } else {
+                          newAnswers[currentQuestionId] = newAnswers[currentQuestionId].filter(d => d !== departement);
+                        }
+                        
+                        return newAnswers;
+                      });
+                    }}
+                    selectedDepartements={answers[currentQuestionId] || []}
+                    regionFilter={answers['region_selection']}
+                  />
+                </div>
+                
+                {/* Afficher les départements sélectionnés */}
+                <SelectedDepartements 
+                  selectedDepartements={answers[currentQuestionId] || []} 
+                  onRemove={(dep) => {
+                    setAnswers(prev => ({
+                      ...prev,
+                      [currentQuestionId]: prev[currentQuestionId].filter(d => d !== dep)
+                    }));
+                  }}
+                />
+                
+                {/* Message d'aide */}
+                <div className="text-sm text-gray-500 dark:text-gray-400 italic mt-4 mb-4">
+                  <p>Vous avez sélectionné {answers[currentQuestionId]?.length || 0} département(s).</p>
+                  <p className="mt-1">Vous pouvez passer à la question suivante même si vous n'avez pas fait de sélection. 
+                    Dans ce cas, les résultats ne seront pas filtrés par département.</p>
+                </div>
+                
+                {/* Boutons de navigation */}
+                <div className="flex justify-between mt-6">
+                  <button 
+                    onClick={goToPreviousQuestion}
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center"
+                  >
+                    <ArrowLeft size={18} className="mr-2" /> Précédent
+                  </button>
+                  
+                  <button 
+                    onClick={goToNextQuestion}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                  >
+                    Suivant <ArrowRight size={18} className="ml-2" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             
             {/* Questions à choix */}
             {currentQuestion.type === 'choice' && (
@@ -1301,7 +1235,6 @@ const calculateResults = async () => {
                                   return null;
                                 })}
                                 
-
                                 {/* Affichage de la couverture géographique si pertinent */}
                                 {result.item['listeListeOuinonid_echellelocalisation'] === '1' && (
                                   <span className="inline-flex items-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
