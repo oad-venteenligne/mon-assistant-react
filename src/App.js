@@ -1424,7 +1424,7 @@ const calculateResults = async () => {
                         Voir tous les résultats ({filteredResults.length})
                       </button>
                     )}
-                  </>
+                  </div>
                 )}
                 
                 {/* Bouton pour recommencer */}
