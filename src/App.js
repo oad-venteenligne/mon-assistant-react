@@ -1295,103 +1295,125 @@ const calculateResults = async () => {
       </div>
     )}
                               
-                              {/* Autres critères de correspondance */}
-                              {Object.entries(answers).map(([questionId, answer]) => {
-                                // Ignorer les questions de localisation qui sont traitées séparément ci-dessus
-                                if (['location_scope', 'region_selection', 'department_selection'].includes(questionId)) {
-                                  return null;
-                                }
-                                
-                                const question = questions.find(q => q.id === questionId);
-                                if (!question || !question.filter) return null;
-                                
-                                // Pour chaque question, nous allons collecter les critères qui correspondent et ceux qui ne correspondent pas
-                                const matchingCriteria = [];
-                                const nonMatchingCriteria = [];
-                                
-                                if (question.filter === 'listeListeTypeplateforme') {
-                                  if (answer && result.item[question.filter] === answer) {
-                                    const choiceLabel = question.choices.find(c => c.id === answer)?.label;
-                                    matchingCriteria.push(`Type d'outil: ${choiceLabel}`);
-                                  } else if (answer) {
-                                    const choiceLabel = question.choices.find(c => c.id === answer)?.label;
-                                    nonMatchingCriteria.push(`Type d'outil: ${choiceLabel}`);
-                                  }
-                                } 
-                                else if (question.filter === 'ouinonFields') {
-                                  if (Array.isArray(answer) && answer.length > 0) {
-                                    answer.forEach(ans => {
-                                      const fieldName = question.filterMapping[ans];
-                                      const featureLabel = question.choices.find(c => c.id === ans)?.label;
-                                      
-                                      if (fieldName && result.item[fieldName] === "2") { // "2" = Oui
-                                        matchingCriteria.push(featureLabel);
-                                      } else if (fieldName) {
-                                        nonMatchingCriteria.push(featureLabel);
-                                      }
-                                    });
-                                  }
-                                }
-                                else {
-                                  if (Array.isArray(answer) && answer.length > 0) {
-                                    const itemValues = (result.item[question.filter] || '').split(',').map(s => s.trim());
-                                    
-                                    answer.forEach(ans => {
-                                      const choiceLabel = question.choices.find(c => c.id === ans)?.label;
-                                      
-                                      if (itemValues.includes(ans)) {
-                                        matchingCriteria.push(choiceLabel);
-                                      } else {
-                                        nonMatchingCriteria.push(choiceLabel);
-                                      }
-                                    });
-                                  }
-                                }
-                                
-                                // N'afficher la section que si nous avons des critères à montrer
-                                if (matchingCriteria.length === 0 && nonMatchingCriteria.length === 0) {
-                                  return null;
-                                }
-                                
-                                return (
-                                  <div key={questionId} className="mb-4">
-                                    <h4 className="font-medium mb-2">{question.title.replace('?', '')}</h4>
-                                    
-                                    {matchingCriteria.length > 0 && (
-                                      <div className="mb-2">
-                                        <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">Critères correspondants</h5>
-                                        <ul className="space-y-1">
-                                          {matchingCriteria.map((text, idx) => (
-                                            <li key={idx} className="flex items-start text-green-600 dark:text-green-400">
-                                              <CheckCircle size={16} className="mr-2 shrink-0 mt-0.5" />
-                                              <span>{text}</span>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
-                                    
-                                    {nonMatchingCriteria.length > 0 && (
-                                      <div>
-                                        <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">Critères non correspondants</h5>
-                                        <ul className="space-y-1">
-                                          {nonMatchingCriteria.map((text, idx) => (
-                                            <li key={idx} className="flex items-start text-gray-500 dark:text-gray-400">
-                                              <span className="mr-2 mt-0.5 shrink-0">✕</span>
-                                              <span className="line-through">{text}</span>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </details>
-                        </div>
-                      ))}
-                    </div>
+{/* Autres critères de correspondance */}
+{Object.entries(answers).map(([questionId, answer]) => {
+  // Ignorer les questions de localisation qui sont traitées séparément ci-dessus
+  if (['location_scope', 'region_selection', 'department_selection'].includes(questionId)) {
+    return null;
+  }
+  
+  const question = questions.find(q => q.id === questionId);
+  if (!question || !question.filter) return null;
+  
+  // Pour chaque question, nous allons collecter les critères qui correspondent et ceux qui ne correspondent pas
+  const matchingCriteria = [];
+  const nonMatchingCriteria = [];
+  
+  // Cas spécial pour la question d'ajustement du poids
+  if (questionId === 'weight_adjustment') {
+    const itemValue = result.item[question.filter];
+    
+    // Si la réponse est "yes" (utilisateur veut ajuster le poids)
+    if (answer === 'yes') {
+      // Vérifier si l'outil propose l'ajustement (valeur 2 ou 3)
+      if (itemValue === '2' || itemValue === '3') {
+        // Déterminer quel type d'ajustement est proposé
+        const adjustmentType = itemValue === '2' 
+          ? "avec création d'avoir" 
+          : "avec ajustement automatique du prix";
+        
+        matchingCriteria.push(`Ajustement du poids ${adjustmentType}`);
+      } else {
+        nonMatchingCriteria.push("Ajustement du poids");
+      }
+    } 
+    // Si la réponse est "no" (utilisateur ne veut pas ajuster le poids)
+    else if (answer === 'no') {
+      if (itemValue === '1') {
+        matchingCriteria.push("Pas d'ajustement du poids");
+      } else {
+        nonMatchingCriteria.push("Pas d'ajustement du poids");
+      }
+    }
+  }
+  else if (question.filter === 'listeListeTypeplateforme') {
+    if (answer && result.item[question.filter] === answer) {
+      const choiceLabel = question.choices.find(c => c.id === answer)?.label;
+      matchingCriteria.push(`Type d'outil: ${choiceLabel}`);
+    } else if (answer) {
+      const choiceLabel = question.choices.find(c => c.id === answer)?.label;
+      nonMatchingCriteria.push(`Type d'outil: ${choiceLabel}`);
+    }
+  } 
+  else if (question.filter === 'ouinonFields') {
+    if (Array.isArray(answer) && answer.length > 0) {
+      answer.forEach(ans => {
+        const fieldName = question.filterMapping[ans];
+        const featureLabel = question.choices.find(c => c.id === ans)?.label;
+        
+        if (fieldName && result.item[fieldName] === "2") { // "2" = Oui
+          matchingCriteria.push(featureLabel);
+        } else if (fieldName) {
+          nonMatchingCriteria.push(featureLabel);
+        }
+      });
+    }
+  }
+  else {
+    if (Array.isArray(answer) && answer.length > 0) {
+      const itemValues = (result.item[question.filter] || '').split(',').map(s => s.trim());
+      
+      answer.forEach(ans => {
+        const choiceLabel = question.choices.find(c => c.id === ans)?.label;
+        
+        if (itemValues.includes(ans)) {
+          matchingCriteria.push(choiceLabel);
+        } else {
+          nonMatchingCriteria.push(choiceLabel);
+        }
+      });
+    }
+  }
+  
+  // N'afficher la section que si nous avons des critères à montrer
+  if (matchingCriteria.length === 0 && nonMatchingCriteria.length === 0) {
+    return null;
+  }
+  
+  return (
+    <div key={questionId} className="mb-4">
+      <h4 className="font-medium mb-2">{question.title.replace('?', '')}</h4>
+      
+      {matchingCriteria.length > 0 && (
+        <div className="mb-2">
+          <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">Critères correspondants</h5>
+          <ul className="space-y-1">
+            {matchingCriteria.map((text, idx) => (
+              <li key={idx} className="flex items-start text-green-600 dark:text-green-400">
+                <CheckCircle size={16} className="mr-2 shrink-0 mt-0.5" />
+                <span>{text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
+      {nonMatchingCriteria.length > 0 && (
+        <div>
+          <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">Critères non correspondants</h5>
+          <ul className="space-y-1">
+            {nonMatchingCriteria.map((text, idx) => (
+              <li key={idx} className="flex items-start text-gray-500 dark:text-gray-400">
+                <span className="mr-2 mt-0.5 shrink-0">✕</span>
+                <span className="line-through">{text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+})}
                     
                     {/* Bouton pour voir plus de résultats */}
                     {!showAllResults && filteredResults.length > 5 && (
