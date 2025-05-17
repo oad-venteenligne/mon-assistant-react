@@ -189,15 +189,14 @@ const questions = [
   multiple: true,
   nextQuestion: 'weight_adjustment'
 },
-  {
+{
   id: 'weight_adjustment',
   title: "Avez-vous besoin d'ajuster le poids des produits ?",
-  description: "Choisissez si vous avez besoin d'ajuster le poids des produits après la commande et comment.",
+  description: "Indiquez si vous avez besoin d'ajuster le poids des produits après la commande.",
   type: 'choice',
   choices: [
-    { id: '2', label: 'Oui, avec création d\'un avoir', description: "Un avoir est créé en cas de différence de poids" },
-    { id: '3', label: 'Oui, avec ajustement automatique du prix', description: "Le prix final est ajusté automatiquement en fonction du poids réel" },
-    { id: '1', label: 'Non', description: "Pas besoin d'ajustement de poids" }
+    { id: 'yes', label: 'Oui', description: "J'ai besoin d'ajuster le poids des produits après la commande" },
+    { id: 'no', label: 'Non', description: "Pas besoin d'ajustement de poids" }
   ],
   filter: 'listeListe19Ajustement',
   multiple: false,
@@ -725,50 +724,66 @@ const calculateResults = async () => {
     let locationMatch = true; // Par défaut, toutes les plateformes ici ont déjà satisfait le critère de localisation
     
     // Parcourir toutes les autres réponses
-    Object.entries(answers).forEach(([questionId, answer]) => {
-      // Ignorer les questions de localisation déjà traitées
-      if (['location_scope', 'region_selection', 'department_selection'].includes(questionId)) {
-        return;
+ Object.entries(answers).forEach(([questionId, answer]) => {
+  // Ignorer les questions de localisation déjà traitées
+  if (['location_scope', 'region_selection', 'department_selection'].includes(questionId)) {
+    return;
+  }
+  
+  const question = questions.find(q => q.id === questionId);
+  if (!question || !question.filter) return;
+  
+  // Cas spécial pour la question d'ajustement du poids
+  if (questionId === 'weight_adjustment') {
+    totalCriteria++;
+    if (answer) {
+      const itemValue = item[question.filter];
+      
+      // Si la réponse est "yes", vérifier si l'item a une des deux valeurs "oui" (2 ou 3)
+      if (answer === 'yes' && (itemValue === '2' || itemValue === '3')) {
+        matchedCriteria++;
       }
-      
-      const question = questions.find(q => q.id === questionId);
-      if (!question || !question.filter) return;
-      
-      // Différentes logiques selon le type de filtre
-      if (question.filter === 'listeListeTypeplateforme') {
-        // Filtrage pour le type de plateforme (choix unique)
+      // Si la réponse est "no", vérifier si l'item a la valeur "non" (1)
+      else if (answer === 'no' && itemValue === '1') {
+        matchedCriteria++;
+      }
+    }
+  }
+  // Différentes logiques selon le type de filtre
+  else if (question.filter === 'listeListeTypeplateforme') {
+    // Filtrage pour le type de plateforme (choix unique)
+    totalCriteria++;
+    if (answer && item[question.filter] === answer) {
+      matchedCriteria++;
+    }
+  } 
+  else if (question.filter === 'ouinonFields') {
+    // Gestion des champs Oui/Non
+    if (Array.isArray(answer) && answer.length > 0) {
+      answer.forEach(ans => {
+        const fieldName = question.filterMapping[ans];
         totalCriteria++;
-        if (answer && item[question.filter] === answer) {
+        if (fieldName && item[fieldName] === "2") { // "2" = Oui
           matchedCriteria++;
         }
-      } 
-      else if (question.filter === 'ouinonFields') {
-        // Gestion des champs Oui/Non
-        if (Array.isArray(answer) && answer.length > 0) {
-          answer.forEach(ans => {
-            const fieldName = question.filterMapping[ans];
-            totalCriteria++;
-            if (fieldName && item[fieldName] === "2") { // "2" = Oui
-              matchedCriteria++;
-            }
-          });
+      });
+    }
+  }
+  else {
+    // Filtrage pour les autres critères (choix multiples)
+    if (Array.isArray(answer) && answer.length > 0) {
+      const itemValues = (item[question.filter] || '').split(',').map(s => s.trim());
+      
+      // Compter chaque valeur sélectionnée comme un critère distinct
+      answer.forEach(ans => {
+        totalCriteria++;
+        if (itemValues.includes(ans)) {
+          matchedCriteria++;
         }
-      }
-      else {
-        // Filtrage pour les autres critères (choix multiples)
-        if (Array.isArray(answer) && answer.length > 0) {
-          const itemValues = (item[question.filter] || '').split(',').map(s => s.trim());
-          
-          // Compter chaque valeur sélectionnée comme un critère distinct
-          answer.forEach(ans => {
-            totalCriteria++;
-            if (itemValues.includes(ans)) {
-              matchedCriteria++;
-            }
-          });
-        }
-      }
-    });
+      });
+    }
+  }
+});
     
     // Calculer le pourcentage de correspondance
     const matchPercentage = totalCriteria > 0 ? Math.round((matchedCriteria / totalCriteria) * 100) : 0;
