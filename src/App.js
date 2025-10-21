@@ -912,7 +912,7 @@ const calculateResults = async () => {
                         Vos données ne seront jamais partagées avec des tiers.
                       </p>
                       <p className="mt-2">
-                        <a href="/privacy" className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800">
+                        <a href="https://www.oad-venteenligne.org/?PolitiqueConfidentialite" className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800">
                           En savoir plus sur notre politique de confidentialité
                         </a>
                       </p>
