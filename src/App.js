@@ -907,7 +907,7 @@ const calculateResults = async () => {
                     <div className="text-sm text-gray-700 dark:text-gray-300">
                       <p className="font-semibold mb-2">Protection de vos données</p>
                       <p>
-                        En utilisant cet assistant, vos choix seront enregistrés de manière anonyme pour améliorer notre service. 
+                        En utilisant cet assistant, vos choix seront enregistrés de manière anonyme à des fins d'amélioration de l'outil et à des fins de recherche scientifique. 
                         Si vous fournissez votre email, nous l'utiliserons uniquement pour vous informer des mises à jour. 
                         Vos données ne seront jamais partagées avec des tiers.
                       </p>
