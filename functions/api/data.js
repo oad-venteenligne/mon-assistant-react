@@ -30,25 +30,3 @@ export async function onRequest(context) {
     );
   }
 }
-```
-
-## Différences principales entre Vercel et Cloudflare :
-
-| Vercel | Cloudflare |
-|--------|------------|
-| `export default function handler(req, res)` | `export async function onRequest(context)` |
-| `res.status(200).json(data)` | `return new Response(JSON.stringify(data), { status: 200 })` |
-| Dossier `/api/` | Dossier `/functions/` |
-
-## Étape 3 : Structure finale
-
-Votre structure de projet devrait ressembler à :
-```
-votre-projet/
-├── functions/
-│   └── api/
-│       └── data.js  ← Votre fichier avec la nouvelle syntaxe
-├── public/
-├── src/
-│   └── App.js  ← Appelle fetch("/api/data")
-└── package.json
