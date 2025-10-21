@@ -889,19 +889,47 @@ const calculateResults = async () => {
             {/* Écran d'accueil */}
             {currentQuestion.type === 'welcome' && (
               <div className="text-center">
-                <h2 className="text-3xl font-bold mb-6 text-green-600 dark:text-green-400">{currentQuestion.title}</h2>
-                <p className="text-lg mb-8">{currentQuestion.description}</p>
+                <h2 className="text-3xl font-bold mb-6 text-green-600 dark:text-green-400">
+                  {currentQuestion.title}
+                </h2>
+                <p className="text-lg mb-6">{currentQuestion.description}</p>
+                
                 <img 
                   src="/images/accueil.jpg"
                   alt="Agriculture durable" 
-                  className="mx-auto rounded-lg shadow-md mb-8"
+                  className="mx-auto rounded-lg shadow-md mb-6"
                 />
+                
+                {/* Message RGPD */}
+                <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 p-4 mb-6 text-left max-w-2xl mx-auto">
+                  <div className="flex">
+                    <HelpCircle size={20} className="text-blue-500 mr-3 flex-shrink-0 mt-1" />
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                      <p className="font-semibold mb-2">Protection de vos données</p>
+                      <p>
+                        En utilisant cet assistant, vos choix seront enregistrés de manière anonyme pour améliorer notre service. 
+                        Si vous fournissez votre email, nous l'utiliserons uniquement pour vous informer des mises à jour. 
+                        Vos données ne seront jamais partagées avec des tiers.
+                      </p>
+                      <p className="mt-2">
+                        <a href="/privacy" className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800">
+                          En savoir plus sur notre politique de confidentialité
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
                 <button 
                   onClick={goToNextQuestion}
-                  className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center mx-auto"
+                  className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center mx-auto text-lg font-semibold"
                 >
-                  Commencer <ArrowRight size={18} className="ml-2" />
+                  J'accepte et je commence <ArrowRight size={20} className="ml-2" />
                 </button>
+                
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                  En cliquant sur ce bouton, vous acceptez notre collecte de données anonymisées
+                </p>
               </div>
             )}
 
@@ -1482,7 +1510,7 @@ const calculateResults = async () => {
               </div>
               <div className="w-24 sm:w-32 h-16 sm:h-20 flex items-center justify-center">
                 <img 
-                  src="/images/Chambragri.svg" 
+                  src="/images/cda_carre.png" 
                   alt="Chambres d'Agriculture"
                   className="max-w-full max-h-full object-contain opacity-80 hover:opacity-100 transition-opacity" 
                 />
