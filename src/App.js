@@ -312,9 +312,41 @@ const questions = [
     'logiciel': 'listeListeOuinonid_logiciel'
   },
   multiple: true,
+  nextQuestion: 'transparency'
+},
+
+{
+  id: 'transparency',
+  title: "Quelle transparence et quels engagements ?",
+  description: "Sélectionnez les fonctionnalités qui aideront vos clients à choisir vos produits.",
+  type: 'choice',
+  choices: [
+    { id: 'label', label: 'Mise en avant de labels ou certifications qualité', description: "Afficher vos labels et certifications sur vos produits" },
+    { id: 'repartitioncouts', label: 'Présentation de la répartition des coûts', description: "Montrer comment le prix est réparti (producteur, transport, etc.)" },
+    { id: 'empreinte', label: 'Calcul de l\'empreinte carbone', description: "Afficher l'impact environnemental de vos produits" }
+  ],
+  filter: 'ouinonFields',
+  filterMapping: {
+    'label': 'listeListeOuinonid_label',
+    'repartitioncouts': 'listeListeOuinonid_repartitioncouts',
+    'empreinte': 'listeListeOuinonid_empreinte'
+  },
+  multiple: true,
+  nextQuestion: 'autonomy'
+},
+{
+  id: 'autonomy',
+  title: "Comment souhaitez-vous gérer votre boutique ?",
+  description: "Indiquez si vous souhaitez gérer vous-même votre boutique en ligne ou la faire gérer par un tiers.",
+  type: 'choice',
+  choices: [
+    { id: '1', label: 'Je veux la gérer moi-même', description: "Gestion autonome de votre boutique" },
+    { id: '2', label: 'Je souhaite qu\'elle soit gérée par un tiers', description: "Un prestataire gère votre boutique pour vous" }
+  ],
+  filter: 'listeListe20Autonomieid_autonomie',
+  multiple: false,
   nextQuestion: 'user_info'
 },
-  
   // Nouvelles questions pour le mini-questionnaire
   {
     id: 'user_info',
