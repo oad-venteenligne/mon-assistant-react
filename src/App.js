@@ -290,9 +290,30 @@ const questions = [
   ],
   filter: 'checkboxListe021Typesupportplateformeid_typesupportplateforme',
   multiple: true,
+  nextQuestion: 'interoperability'
+},
+
+{
+  id: 'interoperability',
+  title: "Besoins en Interopérabilité",
+  description: "Souhaitez-vous que l'outil puisse se synchroniser avec d'autres logiciels que vous utilisez ? Indiquez quel type de connexion vous est nécessaire :",
+  type: 'choice',
+  choices: [
+    { id: 'synchronisation', label: 'Synchronisation des stocks', description: "Mise à jour automatique de vos stocks entre outils" },
+    { id: 'systemecaisse', label: 'Avec un système de Caisse', description: "Connexion avec votre système de caisse" },
+    { id: 'terminal', label: 'Avec un terminal de Paiement', description: "Connexion avec votre terminal de paiement" },
+    { id: 'logiciel', label: 'Avec un logiciel de comptabilité', description: "Connexion avec votre logiciel comptable" }
+  ],
+  filter: 'ouinonFields',
+  filterMapping: {
+    'synchronisation': 'listeListeOuinonid_synchronisation',
+    'systemecaisse': 'listeListeOuinonid_systemecaisse',
+    'terminal': 'listeListeOuinonid_terminal',
+    'logiciel': 'listeListeOuinonid_logiciel'
+  },
+  multiple: true,
   nextQuestion: 'user_info'
 },
-  
   
   // Nouvelles questions pour le mini-questionnaire
   {
